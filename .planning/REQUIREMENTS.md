@@ -86,13 +86,43 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (to be filled by roadmap) | | |
+| CORE-01 | Phase 1 | Pending |
+| CORE-02 | Phase 1 | Pending |
+| CORE-03 | Phase 1 | Pending |
+| CORE-04 | Phase 1 | Pending |
+| CORE-05 | Phase 1 | Pending |
+| ALIGN-01 | Phase 1 | Pending |
+| ALIGN-02 | Phase 1 | Pending |
+| ALIGN-03 | Phase 1 | Pending |
+| SERDE-01 | Phase 1 | Pending |
+| SERDE-02 | Phase 1 | Pending |
+| SERDE-03 | Phase 1 | Pending |
+| EVAL-01 | Phase 1 | Pending |
+| PKG-01 | Phase 1 | Pending |
+| SPEED-01 | Phase 2 | Pending |
+| SPEED-02 | Phase 2 | Pending |
+| SPEED-03 | Phase 2 | Pending |
+| TUNE-01 | Phase 3 | Pending |
+| TUNE-02 | Phase 3 | Pending |
+| TUNE-03 | Phase 3 | Pending |
+| TUNE-04 | Phase 3 | Pending |
+| GEN-01 | Phase 4 | Pending |
+| GEN-02 | Phase 4 | Pending |
+| GEN-03 | Phase 4 | Pending |
+| EVAL-02 | Phase 5 | Pending |
+| EVAL-03 | Phase 5 | Pending |
+| EVAL-04 | Phase 5 | Pending |
+| SERDE-04 | Phase 5 | Pending |
+| PKG-02 | Phase 6 | Pending |
+| PKG-03 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 27 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 27 ⚠️
+- v1 requirements: 29 total (CORE 5, ALIGN 3, SERDE 4, SPEED 3, TUNE 4, GEN 3, EVAL 4, PKG 3)
+- Mapped to phases: 29 (100%) ✓
+- Unmapped: 0
+
+**Per-phase counts:** Phase 1 = 13, Phase 2 = 3, Phase 3 = 4, Phase 4 = 3, Phase 5 = 4, Phase 6 = 2.
 
 ---
 *Requirements defined: 2026-06-24*
-*Last updated: 2026-06-24 after initial definition*
+*Last updated: 2026-06-24 after roadmap traceability mapping (6 phases)*
