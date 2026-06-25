@@ -1,77 +1,125 @@
-# HANDOFF — Agent Relay Baton
+# HANDOFF - Agent Relay Baton
 
-> **Single source of truth for continuing this project across agents (Claude ⇄ Codex).**
-> Read this FIRST. Update it LAST (before you stop). COMMIT it. The git history is our shared memory.
+> Single source of truth for continuing this project across agents (Claude <-> Codex).
+> Read this FIRST. Update it LAST before stopping. Commit it. The git history is our shared memory.
 
-## Relay protocol (ping-pong)
+## Relay protocol
 
-1. **On start:** if a git remote exists, `git pull`. Then read THIS file top-to-bottom, especially **▶ NEXT ACTION**, then open the files it points to.
-2. **Work the next chunk.** Commit early and often with clear, conventional messages (`feat(...)`, `fix(...)`, `docs(...)`). Small commits = the other agent can see exactly what changed.
-3. **Before you stop / hit your limit:** update the sections below (**Current status**, **What was just done**, **▶ NEXT ACTION**, **Open questions**). Leave the tree clean — or, if work is mid-flight, write a `WIP:` note here saying exactly what's half-done. Then `git add -A && git commit`, and `git push` if a remote exists.
-4. **Hand back the baton:** the user pastes the *other* agent its continuation prompt (bottom of this file).
+1. **On start:** if a git remote exists, `git pull`. Then read this file top-to-bottom, especially **NEXT ACTION**, then open the files it points to.
+2. **Work the next chunk.** Commit early and often with clear, conventional messages (`feat(...)`, `fix(...)`, `docs(...)`). Small commits let the other agent see exactly what changed.
+3. **Before stopping:** update **Current status**, **What was just done**, **NEXT ACTION**, and **Open questions / caveats**. Leave the tree clean, or write a `WIP:` note here with exactly what is half-done. Commit it, and push if a remote exists.
+4. **Hand back the baton:** the user pastes the other agent its continuation prompt at the bottom of this file.
 
-## Project (one-liner)
+## Project
 
-From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseTokenizer)`) feeding a **FIXED** binary NER model (word-level F1). Deliver **3 trained tokenizers + a ≤1-page report** as `HW2_214034621.zip`. Graded NLP homework (HW2). **NOT** a retrieval/search/ranking system — there is no candidate generation, reranking, or NDCG.
+From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseTokenizer)`) feeding a **fixed** binary NER model (word-level F1). Deliver **3 trained tokenizers + a <=1-page report** as `HW2_214034621.zip`. Graded NLP homework (HW2). This is **not** a retrieval/search/ranking system.
 
 ## Current status
 
-- **Last updated by:** Claude — 2026-06-25 (at commit `694f9ea` + this HANDOFF commit)
-- **Phase:** 1 of 6 — *Gates-First Submittable Tokenizer*
-- **Phase status:** **PLANNED** — 4 executable plans, verified, 0 blockers. **Nothing implemented yet.**
-- **Code state:** `code/` and `data/` are still inside the two root zips (not extracted). `uv` is not installed; no `.venv`.
+- **Last updated by:** Codex - 2026-06-25 (after commit `f919fd7`; plus this HANDOFF commit)
+- **Phase:** 1 of 6 - Gates-First Submittable Tokenizer
+- **Phase status:** In progress - `01-01` complete, `01-02` next. Progress: 1/4 plans.
+- **Code state:** `code/` scaffold extracted. `data/` extracted and gitignored. `.venv/` created by Windows-native `uv sync` and gitignored.
+- **Validation state:** `code/align_check.py` exists and is intentionally red. It passes fixture loading, then fails cleanly at `BPETokenizer.train()` because the tokenizer is still the course stub.
 
-## What was just done (most recent session — Claude)
+## What was just done
 
-- Ran `/gsd-plan-phase 1`: researched the phase, wrote the Nyquist `01-VALIDATION.md` (VP-1..VP-8), produced + verified 4 plans, resolved 2 checker warnings.
-- Commits: `bb763ec` research → `608842d` validation → `d5d46bb` plans → `934e03d` finalize → `694f9ea` clean tree.
+Executed Phase 1 plan `01-01`:
 
-## ▶ NEXT ACTION
+- Extracted `code_env_example.zip` selectively, excluding `HW2_123456789.zip` and `code/__pycache__/`.
+- Extracted `data (3).zip` to ignored `data/`.
+- Added `.gitignore` for local env/data/training artifacts and assignment source files.
+- Recorded `.planning/phases/01-gates-first-submittable-tokenizer/forbidden_files.sha256` for:
+  - `code/base_tokenizer.py`
+  - `code/train_ner_model.py`
+  - `generate_tokenizers.py`
+  - `check_submission.py`
+- Installed `uv` with `py -m pip install --user uv`, then ran `py -m uv sync`.
+- Verified imports under `uv run`: `numpy 2.4.6`, `regex 2026.5.9`, `torch 2.12.0+cu126`, `tqdm 4.68.1`.
+- Added `code/align_check.py`, covering VP-1, VP-2, VP-3, VP-4, and VP-6.
+- Created `.planning/phases/01-gates-first-submittable-tokenizer/01-01-SUMMARY.md`.
+- Updated `.planning/STATE.md` and `.planning/ROADMAP.md`.
 
-Execute Phase 1 **in order** (waves are strictly sequential 0→1→2→3 — they share `code/bpe_tokenizer.py`):
+Commits added by Codex:
 
-1. **`01-01`** — `.planning/phases/01-gates-first-submittable-tokenizer/01-01-PLAN.md`
-   Extract `code_env_example.zip` + `data (3).zip` into the repo; `bash init.sh` (or `uv sync`); create `code/align_check.py` (the local gate harness, initially failing) + a SHA-256 manifest of the 4 forbidden files.
-2. **`01-02`** — char-up BPE `train`/`encode`/`decode`: `▁` (U+2581) space marker, guaranteed cross-word bigram capped at one internal space, UTF-8 byte fallback (zero `[UNK]`), pure length-faithful decode.
-3. **`01-03`** — serialization hardening (`__getstate__`/`__setstate__`, regex-as-string, cache drop) + deterministic merges for byte-reproducibility.
-4. **`01-04`** — generate all 3 reproducible pkls, **local CPU** NER F1 smoke (directional F1≥0.4), build `HW2_214034621.zip` + `train_commands.txt`, pass full `check_submission.py`.
+- `9cecf5f` - `chore(01-01): extract scaffold and data baseline`
+- `5ac8461` - `test(01-01): add red tokenizer alignment harness`
+- `f919fd7` - `docs(01-01): complete scaffold harness plan`
 
-Read each PLAN.md's `<read_first>` / `<action>` / `<acceptance_criteria>` / `<verify>`. Run `code/align_check.py` after each step.
+## NEXT ACTION
 
-## Hard rules (violating any = wasted work or a zero grade)
+Execute **`01-02`**:
 
-- **Stack:** `numpy`, `regex` (`import regex`, never stdlib `re`), `torch`, `tqdm` ONLY. No other libraries.
-- **NEVER edit** `base_tokenizer.py`, `train_ner_model.py`, `generate_tokenizers.py`, `check_submission.py` — they must stay byte-identical to the originals.
-- **Pickle-safety:** no lambdas / closures / `defaultdict(lambda)` / local classes in tokenizer state; store regex as a pattern string; drop the encode cache in `__getstate__`/`__setstate__`.
-- **decode** = pure length-preserving `▁`→single-space substitution (no stripping / normalization).
-- **GPU (scored NER F1)** runs only on the M60 VM via Codex; keep local CPU gates green first to protect the 10h budget.
+`.planning/phases/01-gates-first-submittable-tokenizer/01-02-PLAN.md`
 
-## Open questions / decisions needed from the user
+Goal: implement `BPETokenizer.train`, `encode`, and `decode` in `code/bpe_tokenizer.py` so the red harness turns green for VP-1, VP-2, VP-4, and VP-6.
 
-- **Git remote:** none configured. Needed only for cross-machine relay (Codex on the VM). The data zip is ~95MB → it should be `.gitignore`d and kept on the VM separately; only `.planning/`, `code/`, and `HANDOFF.md` travel through git. *(Local Codex in this same folder needs no remote.)*
-- Nothing else blocks executing `01-01` locally.
+Use this command pattern for verification in PowerShell:
+
+```powershell
+$env:Path = "$env:APPDATA\Python\Python311\Scripts;$env:Path"
+uv run python code/align_check.py --only vp1,vp2,vp4,vp6
+```
+
+Or use the module form, which does not depend on PATH:
+
+```powershell
+py -m uv run python code/align_check.py --only vp1,vp2,vp4,vp6
+```
+
+Read before editing:
+
+- `.planning/phases/01-gates-first-submittable-tokenizer/01-02-PLAN.md`
+- `.planning/phases/01-gates-first-submittable-tokenizer/01-CONTEXT.md`
+- `.planning/phases/01-gates-first-submittable-tokenizer/01-RESEARCH.md`
+- `.planning/phases/01-gates-first-submittable-tokenizer/01-VALIDATION.md`
+- `code/base_tokenizer.py`
+- `code/bpe_tokenizer.py`
+- `code/train_ner_model.py`
+- `check_submission.py`
+
+## Hard rules
+
+- **Never edit** the four forbidden files after extraction:
+  - `code/base_tokenizer.py`
+  - `code/train_ner_model.py`
+  - `generate_tokenizers.py`
+  - `check_submission.py`
+- Use only the locked stack: `numpy`, `regex`, `torch`, `tqdm`. No new project dependencies.
+- Use `import regex`, not stdlib `re`, in tokenizer code if regex is needed.
+- `decode` must be pure and length-preserving: ids -> token strings -> join -> replace space marker with real spaces. No strip/lower/normalization.
+- Guarantee at least one cross-word bigram and no token spanning 3+ words.
+- `encode` must never emit `[UNK]` id 1.
+- Keep tokenizer pickle-safe: no lambdas/closures/local classes/defaultdict(lambda) in persisted state; regex as pattern string; cache dropped/rebuilt in 01-03.
+- No GPU run until local gates are green. Protect the 10h Tesla M60 budget.
+
+## Open questions / caveats
+
+- **Git remote:** none configured. Local handoff works in this folder; remote only matters for VM relay.
+- **GSD helper issue:** `node $HOME/.codex/gsd-core/bin/gsd-tools.cjs ...` currently fails because `../../../package.json` is missing from the local GSD install. Codex manually updated `STATE.md` and `ROADMAP.md` for `01-01`.
+- **uv PATH:** `uv` is installed in the user Python scripts directory. In PowerShell, either prepend `$env:APPDATA\Python\Python311\Scripts` to `PATH`, or run `py -m uv ...`.
+- **Line endings:** Git reports LF-to-CRLF warnings on Windows. No functional issue observed.
 
 ## Key files map
 
+- Relay baton: `HANDOFF.md`
 - Rules / constraints: `.claude/CLAUDE.md`
 - Spec & roadmap: `.planning/PROJECT.md`, `.planning/ROADMAP.md`, `.planning/REQUIREMENTS.md`, `.planning/STATE.md`
 - Research: `.planning/research/{STACK,ARCHITECTURE,PITFALLS,FEATURES,SUMMARY}.md`
-- Phase 1: `.planning/phases/01-gates-first-submittable-tokenizer/{01-CONTEXT,01-RESEARCH,01-VALIDATION,01-01..01-04-PLAN}.md`
+- Phase 1 artifacts: `.planning/phases/01-gates-first-submittable-tokenizer/`
+- Red harness: `code/align_check.py`
+- Tokenizer to implement next: `code/bpe_tokenizer.py`
 
----
+## Continuation prompts
 
-## Continuation prompts (the user pastes these)
+### To Codex
 
-**→ To CODEX (when Claude hands off):**
-```
-Continue this project (it's a from-scratch BPE tokenizer for NER — NOT a retrieval/ranking system).
-1. If you pulled from git, you have the latest. Read HANDOFF.md at the repo root — it's the baton: current status, the exact NEXT ACTION, hard rules, and the file map. Follow it.
-2. Do the next chunk of work. Commit early and often with clear messages.
-3. Before you stop or hit your limit: update HANDOFF.md (Current status, What was just done, NEXT ACTION, Open questions), commit everything, and push if a remote exists — so Claude resumes exactly where you stopped.
-Never edit the 4 forbidden files. If unsure about anything, say so instead of guessing. Ask before any irreversible or out-of-scope change.
+```text
+Continue this project from HANDOFF.md. Do the NEXT ACTION exactly. Never edit the four forbidden files. Commit each completed task and update HANDOFF.md last.
 ```
 
-**→ To CLAUDE (when Codex hands off):** just say:
-```
+### To Claude
+
+```text
 Read HANDOFF.md and continue from the NEXT ACTION.
 ```
