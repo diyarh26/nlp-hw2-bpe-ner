@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+trained_tokenizers/
+*.pkl
+data/
+code_env_example.zip
+data*.zip
+HW2 26 (2).pdf
+Tutorial_7.ipynb
+HW2_*.zip
