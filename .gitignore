@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 trained_tokenizers/
+models/
 *.pkl
 data/
 code_env_example.zip
