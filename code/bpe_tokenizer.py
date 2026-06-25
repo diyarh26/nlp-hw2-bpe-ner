@@ -16,7 +16,7 @@ from base_tokenizer import BaseTokenizer
 
 SPACE_TOKEN = "▁"
 BYTE_PREFIX = "\ue000"
-TRAIN_TEXT_LIMIT = 5000
+TRAIN_TEXT_LIMIT = 1000
 PRETOKEN_PATTERN = r"\X"
 
 

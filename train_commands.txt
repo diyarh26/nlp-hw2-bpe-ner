@@ -1,0 +1,9 @@
+python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
+
+Default train-file mapping used:
+tokenizer_1.pkl: --train_files_1 domain_1_train.txt
+tokenizer_2.pkl: --train_files_2 domain_2_train.txt
+tokenizer_3.pkl: --train_files_3 domain_1_train.txt domain_2_train.txt
+
+Environment command used locally:
+py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
