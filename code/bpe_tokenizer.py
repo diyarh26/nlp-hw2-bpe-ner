@@ -9,12 +9,15 @@ the oracle.
 from collections import Counter
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+import regex
+
 from base_tokenizer import BaseTokenizer
 
 
 SPACE_TOKEN = "▁"
 BYTE_PREFIX = "\ue000"
 TRAIN_TEXT_LIMIT = 5000
+PRETOKEN_PATTERN = r"\X"
 
 
 def _pair_sort_key(item: Tuple[Tuple[str, str], int]) -> Tuple[int, str, str]:
@@ -30,6 +33,35 @@ class BPETokenizer(BaseTokenizer):
         self.merges: List[Tuple[str, str]] = []
         self.merge_ranks: Dict[Tuple[str, str], int] = {}
         self.byte_tokens = {i: f"{BYTE_PREFIX}{i:02x}" for i in range(256)}
+        self.pretoken_pattern = PRETOKEN_PATTERN
+        self._init_runtime_state()
+
+    def __getstate__(self) -> Dict:
+        """Serialize primitive state; drop runtime cache and compiled regex."""
+        return {
+            "vocab_size": self.vocab_size,
+            "space_token": self.space_token,
+            "token_to_id": dict(self.token_to_id),
+            "id_to_token": dict(self.id_to_token),
+            "special_tokens": dict(self.special_tokens),
+            "merges": list(self.merges),
+            "merge_ranks": dict(self.merge_ranks),
+            "byte_tokens": dict(self.byte_tokens),
+            "pretoken_pattern": self.pretoken_pattern,
+        }
+
+    def __setstate__(self, state: Dict) -> None:
+        """Restore primitive state and rebuild runtime helpers."""
+        self.vocab_size = state["vocab_size"]
+        self.space_token = state["space_token"]
+        self.token_to_id = dict(state["token_to_id"])
+        self.id_to_token = dict(state["id_to_token"])
+        self.special_tokens = dict(state["special_tokens"])
+        self.merges = list(state["merges"])
+        self.merge_ranks = dict(state["merge_ranks"])
+        self.byte_tokens = dict(state["byte_tokens"])
+        self.pretoken_pattern = state.get("pretoken_pattern", PRETOKEN_PATTERN)
+        self._init_runtime_state()
 
     def train(self, texts: List[str]) -> None:
         """Train a deterministic char-up BPE tokenizer on a capped text slice."""
@@ -45,6 +77,9 @@ class BPETokenizer(BaseTokenizer):
             self._add_token(token)
 
         while len(self.token_to_id) < self.vocab_size:
+            if len(self.token_to_id) == self.vocab_size - 1 and not self._has_bigram_token():
+                self._force_bigram(sequences)
+                break
             pair_counts = self._count_pairs(sequences)
             candidates = [
                 (pair, count)
@@ -59,7 +94,7 @@ class BPETokenizer(BaseTokenizer):
             self._record_merge(pair)
             sequences = self._apply_pair_to_sequences(sequences, pair)
 
-        if not self._has_bigram_token():
+        if len(self.token_to_id) < self.vocab_size and not self._has_bigram_token():
             self._force_bigram(sequences)
 
     def encode(self, text: str) -> List[int]:
@@ -93,6 +128,12 @@ class BPETokenizer(BaseTokenizer):
         self.merge_ranks = {}
         self.space_token = SPACE_TOKEN
         self.byte_tokens = {i: f"{BYTE_PREFIX}{i:02x}" for i in range(256)}
+        self.pretoken_pattern = PRETOKEN_PATTERN
+        self._init_runtime_state()
+
+    def _init_runtime_state(self) -> None:
+        self._pretoken_regex = regex.compile(self.pretoken_pattern)
+        self._encode_cache: Dict[str, List[int]] = {}
 
     def _add_token(self, token: str) -> None:
         if token in self.token_to_id:
