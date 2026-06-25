@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Wave 0: extract scaffold + data, bootstrap uv env, create failing `align_check.py` harness + forbidden-file integrity baseline
+- [x] 01-01-PLAN.md — Wave 0: extract scaffold + data, bootstrap uv env, create failing `align_check.py` harness + forbidden-file integrity baseline
 - [ ] 01-02-PLAN.md — Wave 1: implement char-up BPE train/encode/decode (▁ marker, bigram, one-space cap, byte fallback, length-faithful decode) → VP-1,2,4,6 green
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Gates-First Submittable Tokenizer | 0/4 | Not started | - |
+| 1. Gates-First Submittable Tokenizer | 1/4 | In Progress | - |
 | 2. Fast Encode + Training Efficiency | 0/TBD | Not started | - |
 | 3. Per-Domain Tuning (Tokenizers 1 & 2) | 0/TBD | Not started | - |
 | 4. Tokenizer 3 Hidden-Domain Generalization | 0/TBD | Not started | - |
