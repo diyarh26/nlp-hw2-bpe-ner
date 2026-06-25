@@ -9,17 +9,17 @@ Committed scope for the submission. Each maps to a roadmap phase.
 
 ### Core BPE Engine (CORE)
 
-- [ ] **CORE-01**: Tokenizer trains true BPE from the character level upward, merging the most frequent adjacent pair iteratively until `vocab_size` is reached.
-- [ ] **CORE-02**: A `space_token` marker (e.g. `▁`) represents whitespace and is a first-class, mergeable symbol added to the vocabulary (and set as the `space_token` attribute, never `None`).
-- [ ] **CORE-03**: Merges are allowed to cross the space marker, producing at least one **bigram** token (a token whose surface spans exactly two whitespace-separated words).
-- [ ] **CORE-04**: Merges are hard-capped at one internal space — the tokenizer never produces a token spanning 3+ words (no trigram+).
-- [ ] **CORE-05**: A byte/char-level base alphabet with fallback guarantees zero `[UNK]` on any input, including unseen characters in the hidden domain.
+- [x] **CORE-01**: Tokenizer trains true BPE from the character level upward, merging the most frequent adjacent pair iteratively until `vocab_size` is reached.
+- [x] **CORE-02**: A `space_token` marker (e.g. `▁`) represents whitespace and is a first-class, mergeable symbol added to the vocabulary (and set as the `space_token` attribute, never `None`).
+- [x] **CORE-03**: Merges are allowed to cross the space marker, producing at least one **bigram** token (a token whose surface spans exactly two whitespace-separated words).
+- [x] **CORE-04**: Merges are hard-capped at one internal space — the tokenizer never produces a token spanning 3+ words (no trigram+).
+- [x] **CORE-05**: A byte/char-level base alphabet with fallback guarantees zero `[UNK]` on any input, including unseen characters in the hidden domain.
 
 ### Decode / NER Alignment Contract (ALIGN)
 
-- [ ] **ALIGN-01**: `decode` restores real spaces from the marker and is length-faithful, so the NER pipeline's `decode([id])` + cumulative `decode(ids[:i+1])` char-span alignment is correct.
-- [ ] **ALIGN-02**: `decode(encode(text))` reconstructs the text (matching the checker's whitespace-insensitive reconstruction test) on dev samples of both domains.
-- [ ] **ALIGN-03**: A local alignment harness verifies token→word mapping and first-subtoken labeling behave correctly before any VM run.
+- [x] **ALIGN-01**: `decode` restores real spaces from the marker and is length-faithful, so the NER pipeline's `decode([id])` + cumulative `decode(ids[:i+1])` char-span alignment is correct.
+- [x] **ALIGN-02**: `decode(encode(text))` reconstructs the text (matching the checker's whitespace-insensitive reconstruction test) on dev samples of both domains.
+- [x] **ALIGN-03**: A local alignment harness verifies token→word mapping and first-subtoken labeling behave correctly before any VM run.
 
 ### Serialization & Reproducibility (SERDE)
 
@@ -86,14 +86,14 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CORE-01 | Phase 1 | Pending |
-| CORE-02 | Phase 1 | Pending |
-| CORE-03 | Phase 1 | Pending |
-| CORE-04 | Phase 1 | Pending |
-| CORE-05 | Phase 1 | Pending |
-| ALIGN-01 | Phase 1 | Pending |
-| ALIGN-02 | Phase 1 | Pending |
-| ALIGN-03 | Phase 1 | Pending |
+| CORE-01 | Phase 1 | Complete in 01-02 |
+| CORE-02 | Phase 1 | Complete in 01-02 |
+| CORE-03 | Phase 1 | Complete in 01-02 |
+| CORE-04 | Phase 1 | Complete in 01-02 |
+| CORE-05 | Phase 1 | Complete in 01-02 |
+| ALIGN-01 | Phase 1 | Complete in 01-02 |
+| ALIGN-02 | Phase 1 | Complete in 01-02 |
+| ALIGN-03 | Phase 1 | Complete in 01-02 |
 | SERDE-01 | Phase 1 | Pending |
 | SERDE-02 | Phase 1 | Pending |
 | SERDE-03 | Phase 1 | Pending |
