@@ -32,7 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A local alignment harness shows `decode` is length-faithful (cumulative-prefix lengths monotonic, exact char reconstruction on dev_1 and dev_2 samples) and `decode(encode(text))` reconstructs text per the checker's test.
   4. Running the unedited `generate_tokenizers.py` twice produces byte-identical `tokenizer_1.pkl` (deterministic/reproducible), with zero `[UNK]` on byte/char-level fallback inputs.
   5. NER F1 on `dev_1_binary.tagged` using tokenizer 1 is >= 0.4 end-to-end.
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 01-01-PLAN.md — Wave 0: extract scaffold + data, bootstrap uv env, create failing `align_check.py` harness + forbidden-file integrity baseline
+- [ ] 01-02-PLAN.md — Wave 1: implement char-up BPE train/encode/decode (▁ marker, bigram, one-space cap, byte fallback, length-faithful decode) → VP-1,2,4,6 green
+- [ ] 01-03-PLAN.md — Wave 2: serialization (`__getstate__`/`__setstate__`, regex-as-string) + byte-reproducibility → VP-3 & VP-5 green
+- [ ] 01-04-PLAN.md — Wave 3: generate 3 pkls, CPU NER F1≥0.4 smoke, build `HW2_214034621.zip`, full `check_submission.py` gate → VP-7 & VP-8 green
 
 ### Phase 2: Fast Encode + Training Efficiency
 **Goal**: Replace any naive paths with a tiktoken-style rank-map greedy encoder plus per-chunk cache and weighted-frequency/incremental-index training, so encode is fast (competition speed axis) and the 95MB/29MB corpora train in reasonable time — output identical to the slow correct oracle.
@@ -98,7 +102,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Gates-First Submittable Tokenizer | 0/TBD | Not started | - |
+| 1. Gates-First Submittable Tokenizer | 0/4 | Not started | - |
 | 2. Fast Encode + Training Efficiency | 0/TBD | Not started | - |
 | 3. Per-Domain Tuning (Tokenizers 1 & 2) | 0/TBD | Not started | - |
 | 4. Tokenizer 3 Hidden-Domain Generalization | 0/TBD | Not started | - |
