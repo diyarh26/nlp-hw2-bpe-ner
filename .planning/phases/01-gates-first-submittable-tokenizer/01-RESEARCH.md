@@ -335,7 +335,13 @@ HW2_214034621.zip
 | A4 | Specials decoding to length-0 surface does not corrupt cumulative length; the aligner's `sub_to_word=-1` for marker/special tokens is harmless. | D-09 / Validation VP-4 | If a special leaks non-zero surface, spans drift. Mitigation: the simulation showed standalone markers get -1 cleanly; assert specials excluded in decode. |
 | A5 | Phase-1 subsample size that "runs in seconds–minutes" naively still produces enough merges to guarantee a legal cross-space bigram (or the force-merge path fires). | D-07 / discretion | If subsample too small, few cross-space pairs; force-merge must reliably fire. Mitigation: make force-merge unconditional-fallback and test on the chosen subsample. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> **All four resolved during planning** and carried into executable plan content:
+> 1. Seeded first-N subsample inside `train()` → Plan 01-02 Task 1.
+> 2. latin-1 single-char-per-byte fallback surface (collision-checked vs `▁`) → Plan 01-02 Task 2.
+> 3. One `▁` per literal space (length-faithful) → Plan 01-02 Task 2.
+> 4. Unconditional forced highest-count legal cross-space bigram (lexicographic tie-break) → Plan 01-02 Task 1.
 
 1. **Exact Phase-1 subsample size (lines/MB) and seeding mechanism inside `train()`.**
    - What we know: cap must be in `train()`, seeded; `generate_tokenizers.py` pre-seeds `random`+`numpy`(42) before calling `train()`.
