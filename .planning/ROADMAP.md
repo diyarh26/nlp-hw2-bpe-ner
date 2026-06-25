@@ -13,7 +13,7 @@ This roadmap delivers three correct, reproducible from-scratch BPE tokenizers th
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Gates-First Submittable Tokenizer** - Complete minimal BPE that passes all hard gates, decodes length-faithfully, pickles/reproduces, and clears F1>=0.4 on one domain end-to-end
+- [x] **Phase 1: Gates-First Submittable Tokenizer** - Complete minimal BPE that passes all hard gates, decodes length-faithfully, pickles/reproduces, and clears F1>=0.4 on one domain end-to-end
 - [ ] **Phase 2: Fast Encode + Training Efficiency** - Rank-map greedy encoder with per-chunk cache and weighted/incremental training so the corpora train fast and the speed axis is competitive
 - [ ] **Phase 3: Per-Domain Tuning (Tokenizers 1 & 2)** - Vocab-size sweep on the F1/efficiency knee to tune Twitter (tok 1) and news (tok 2) configs
 - [ ] **Phase 4: Tokenizer 3 Hidden-Domain Generalization** - Balanced/deduped domain-1+2 mix + byte fallback so the unseen domain incurs zero UNK and degrades gracefully
@@ -48,7 +48,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-04-PLAN.md — Wave 3: generate 3 pkls, CPU NER F1≥0.4 smoke, build `HW2_214034621.zip`, full `check_submission.py` gate → VP-7 & VP-8 green
+- [x] 01-04-PLAN.md — Wave 3: generate 3 pkls, CPU NER F1≥0.4 smoke, build `HW2_214034621.zip`, full `check_submission.py` gate → VP-7 & VP-8 green
 
 ### Phase 2: Fast Encode + Training Efficiency
 
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Gates-First Submittable Tokenizer | 3/4 | In Progress | - |
+| 1. Gates-First Submittable Tokenizer | 4/4 | Complete | 2026-06-25 |
 | 2. Fast Encode + Training Efficiency | 0/TBD | Not started | - |
 | 3. Per-Domain Tuning (Tokenizers 1 & 2) | 0/TBD | Not started | - |
 | 4. Tokenizer 3 Hidden-Domain Generalization | 0/TBD | Not started | - |

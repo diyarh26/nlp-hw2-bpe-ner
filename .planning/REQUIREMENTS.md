@@ -49,14 +49,14 @@ Committed scope for the submission. Each maps to a roadmap phase.
 
 ### Validation & Evaluation (EVAL)
 
-- [ ] **EVAL-01**: NER F1 ≥ 0.4 on `dev_1_binary.tagged` (domain 1) using tokenizer 1.
+- [x] **EVAL-01**: NER F1 ≥ 0.4 on `dev_1_binary.tagged` (domain 1) using tokenizer 1.
 - [ ] **EVAL-02**: NER F1 ≥ 0.4 on `dev_2_binary.tagged` (domain 2) using tokenizer 2.
 - [ ] **EVAL-03**: Tokenizer efficiency (tokens/char or tokens/sentence) and tokenization speed are measured and reported on the dev files for each tokenizer.
 - [ ] **EVAL-04**: All GPU NER runs are executed on the course VM within the 10h budget, after local gates are green.
 
 ### Submission & Report (PKG)
 
-- [ ] **PKG-01**: The submission zip (`HW2_214034621.zip`) matches the required structure exactly and passes `check_submission.py` (code/, trained_tokenizers/tokenizer_{1,2,3}.pkl, report, train_commands.txt).
+- [x] **PKG-01**: The submission zip (`HW2_214034621.zip`) matches the required structure exactly and passes `check_submission.py` (code/, trained_tokenizers/tokenizer_{1,2,3}.pkl, report, train_commands.txt).
 - [ ] **PKG-02**: `report_214034621.pdf` meets the format rules (≤1 A4 page, Arial 10, 1.15 spacing, 2.54cm margins, single column, captioned centered images, in-image text ≥9pt).
 - [ ] **PKG-03**: Report contains all mandatory content: author (Diyar Husayyan, 214034621); per-tokenizer explanation (deviation from basic BPE + hidden-domain handling); top-5 & bottom-5 most/least common training bigrams; dev F1 + efficiency per model; hidden-domain evaluation; model-2 performance + parameter/characteristic/improvement discussion.
 
@@ -97,8 +97,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | SERDE-01 | Phase 1 | Complete in 01-03 |
 | SERDE-02 | Phase 1 | Complete in 01-03 |
 | SERDE-03 | Phase 1 | Complete in 01-03 |
-| EVAL-01 | Phase 1 | Pending |
-| PKG-01 | Phase 1 | Pending |
+| EVAL-01 | Phase 1 | Complete in 01-04 |
+| PKG-01 | Phase 1 | Complete in 01-04 |
 | SPEED-01 | Phase 2 | Pending |
 | SPEED-02 | Phase 2 | Pending |
 | SPEED-03 | Phase 2 | Pending |
