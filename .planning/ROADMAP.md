@@ -44,7 +44,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-03-PLAN.md — Wave 2: serialization (`__getstate__`/`__setstate__`, regex-as-string) + byte-reproducibility → VP-3 & VP-5 green
+- [x] 01-03-PLAN.md — Wave 2: serialization (`__getstate__`/`__setstate__`, regex-as-string) + byte-reproducibility → VP-3 & VP-5 green
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Gates-First Submittable Tokenizer | 2/4 | In Progress | - |
+| 1. Gates-First Submittable Tokenizer | 3/4 | In Progress | - |
 | 2. Fast Encode + Training Efficiency | 0/TBD | Not started | - |
 | 3. Per-Domain Tuning (Tokenizers 1 & 2) | 0/TBD | Not started | - |
 | 4. Tokenizer 3 Hidden-Domain Generalization | 0/TBD | Not started | - |

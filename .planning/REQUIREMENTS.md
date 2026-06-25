@@ -23,9 +23,9 @@ Committed scope for the submission. Each maps to a roadmap phase.
 
 ### Serialization & Reproducibility (SERDE)
 
-- [ ] **SERDE-01**: The trained tokenizer pickles and unpickles from `code/` alone — only plain dict/list/tuple/str/int state, no lambdas/closures/`defaultdict(lambda)`/local classes.
-- [ ] **SERDE-02**: The regex is stored as a pattern string (not a compiled `Pattern`); the runtime encode cache is dropped on pickle via `__getstate__`/`__setstate__` and recompiled on load.
-- [ ] **SERDE-03**: All three tokenizers are byte-reproducible via the unedited `generate_tokenizers.py` with a fixed seed.
+- [x] **SERDE-01**: The trained tokenizer pickles and unpickles from `code/` alone — only plain dict/list/tuple/str/int state, no lambdas/closures/`defaultdict(lambda)`/local classes.
+- [x] **SERDE-02**: The regex is stored as a pattern string (not a compiled `Pattern`); the runtime encode cache is dropped on pickle via `__getstate__`/`__setstate__` and recompiled on load.
+- [x] **SERDE-03**: All three tokenizers are byte-reproducible via the unedited `generate_tokenizers.py` with a fixed seed.
 - [ ] **SERDE-04**: `train_commands.txt` at the zip root lists the exact commands (vocab sizes, `--train_files_3`, etc.) used to produce `tokenizer_{1,2,3}.pkl`.
 
 ### Encode Speed & Training Efficiency (SPEED)
@@ -94,9 +94,9 @@ Which phases cover which requirements. Populated during roadmap creation.
 | ALIGN-01 | Phase 1 | Complete in 01-02 |
 | ALIGN-02 | Phase 1 | Complete in 01-02 |
 | ALIGN-03 | Phase 1 | Complete in 01-02 |
-| SERDE-01 | Phase 1 | Pending |
-| SERDE-02 | Phase 1 | Pending |
-| SERDE-03 | Phase 1 | Pending |
+| SERDE-01 | Phase 1 | Complete in 01-03 |
+| SERDE-02 | Phase 1 | Complete in 01-03 |
+| SERDE-03 | Phase 1 | Complete in 01-03 |
 | EVAL-01 | Phase 1 | Pending |
 | PKG-01 | Phase 1 | Pending |
 | SPEED-01 | Phase 2 | Pending |

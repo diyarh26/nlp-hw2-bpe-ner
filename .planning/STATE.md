@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 1
 current_phase_name: Gates-First Submittable Tokenizer
 status: executing
-stopped_at: Completed 01-02-PLAN.md; ready for 01-03
-last_updated: "2026-06-25T11:55:00.000Z"
+stopped_at: Completed 01-03-PLAN.md; ready for 01-04
+last_updated: "2026-06-25T12:09:00.000Z"
 last_activity: 2026-06-25
-last_activity_desc: Completed 01-02 char-up BPE train/encode/decode
+last_activity_desc: Completed 01-03 serialization/reproducibility hardening
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -29,30 +29,30 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 1 of 6 (Gates-First Submittable Tokenizer)
-Plan: 2 of 4 in current phase
-Status: Executing - ready for 01-03
-Last activity: 2026-06-25 - Completed 01-02 char-up BPE train/encode/decode
+Plan: 3 of 4 in current phase
+Status: Executing - ready for 01-04
+Last activity: 2026-06-25 - Completed 01-03 serialization/reproducibility hardening
 
-Progress: [#####-----] 50%
+Progress: [########--] 75%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2
+- Total plans completed: 3
 - Average duration: 13 min
-- Total execution time: 0.4 hours
+- Total execution time: 0.7 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 | 2 | 4 | 13 min |
+| 1 | 3 | 4 | 13 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01 (19 min), 01-02 (7 min)
-- Trend: Core tokenizer implementation landed; local gates green
+- Last 5 plans: 01-01 (19 min), 01-02 (7 min), 01-03 (14 min)
+- Trend: Core tokenizer and serialization gates green; packaging/F1 remains
 
 *Updated after each plan completion*
 
@@ -69,6 +69,7 @@ Recent decisions affecting current work:
 - [01-01]: Use `code/align_check.py` as the red local gate; it loads real data fixtures and fails cleanly until `BPETokenizer.train/encode/decode` are implemented.
 - [01-01]: `bash init.sh` timed out locally; the working local env was created with Windows-native `py -m uv sync`.
 - [01-02]: `BPETokenizer` now implements deterministic char-up BPE, the `▁` space marker, one-internal-space merge cap, forced bigram fallback, zero-UNK byte fallback, and exact decode reconstruction.
+- [01-03]: `BPETokenizer` now has explicit primitive-only pickle state; all three generated tokenizer pickles were byte-identical across two unedited generator runs at `--vocab_size 600`.
 
 ### Pending Todos
 
@@ -94,6 +95,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-25T11:55:00Z
-Stopped at: Completed 01-02-PLAN.md; ready for 01-03
-Resume file: .planning/phases/01-gates-first-submittable-tokenizer/01-03-PLAN.md
+Last session: 2026-06-25T12:09:00Z
+Stopped at: Completed 01-03-PLAN.md; ready for 01-04
+Resume file: .planning/phases/01-gates-first-submittable-tokenizer/01-04-PLAN.md
