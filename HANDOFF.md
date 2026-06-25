@@ -16,15 +16,17 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-25 (after commit `f919fd7`; plus this HANDOFF commit)
+- **Last updated by:** Codex - 2026-06-25 (after commit `c969296`; plus this HANDOFF commit)
 - **Phase:** 1 of 6 - Gates-First Submittable Tokenizer
-- **Phase status:** In progress - `01-01` complete, `01-02` next. Progress: 1/4 plans.
+- **Phase status:** In progress - `01-01` and `01-02` complete, `01-03` next. Progress: 2/4 plans.
 - **Code state:** `code/` scaffold extracted. `data/` extracted and gitignored. `.venv/` created by Windows-native `uv sync` and gitignored.
-- **Validation state:** `code/align_check.py` exists and is intentionally red. It passes fixture loading, then fails cleanly at `BPETokenizer.train()` because the tokenizer is still the course stub.
+- **Validation state:** `code/align_check.py` is green for VP-1, VP-2, VP-3, VP-4, and VP-6. VP-3 is ahead of schedule, but `01-03` still owns explicit serialization/reproducibility hardening.
 
 ## What was just done
 
-Executed Phase 1 plan `01-01`:
+Executed Phase 1 plans `01-01` and `01-02`.
+
+`01-01`:
 
 - Extracted `code_env_example.zip` selectively, excluding `HW2_123456789.zip` and `code/__pycache__/`.
 - Extracted `data (3).zip` to ignored `data/`.
@@ -40,36 +42,57 @@ Executed Phase 1 plan `01-01`:
 - Created `.planning/phases/01-gates-first-submittable-tokenizer/01-01-SUMMARY.md`.
 - Updated `.planning/STATE.md` and `.planning/ROADMAP.md`.
 
+`01-02`:
+
+- Implemented `BPETokenizer.train()` in `code/bpe_tokenizer.py`:
+  - deterministic char-up BPE
+  - sorted base vocabulary
+  - mergeable `▁` space marker
+  - one-internal-space merge cap
+  - forced legal cross-word bigram fallback
+  - `TRAIN_TEXT_LIMIT = 5000`
+- Implemented `BPETokenizer.encode()` with private-use byte-token fallback so `[UNK]` id 1 is never emitted.
+- Implemented `BPETokenizer.decode()` with exact reconstruction for normal chars, spaces, and fallback UTF-8 bytes.
+- Verified:
+  - `py -m uv run python code/align_check.py --only vp1,vp2,vp4,vp6` passes.
+  - `py -m uv run python code/align_check.py` also passes, including VP-3.
+  - All 256 byte fallback tokens are present after training.
+  - Forbidden-file hashes still match baseline.
+- Created `.planning/phases/01-gates-first-submittable-tokenizer/01-02-SUMMARY.md`.
+- Updated `.planning/STATE.md`, `.planning/ROADMAP.md`, and `.planning/REQUIREMENTS.md`.
+
 Commits added by Codex:
 
 - `9cecf5f` - `chore(01-01): extract scaffold and data baseline`
 - `5ac8461` - `test(01-01): add red tokenizer alignment harness`
 - `f919fd7` - `docs(01-01): complete scaffold harness plan`
+- `7c28e47` - `feat(01-02): implement gates-first BPE tokenizer`
+- `c969296` - `docs(01-02): complete tokenizer core plan`
 
 ## NEXT ACTION
 
-Execute **`01-02`**:
+Execute **`01-03`**:
 
-`.planning/phases/01-gates-first-submittable-tokenizer/01-02-PLAN.md`
+`.planning/phases/01-gates-first-submittable-tokenizer/01-03-PLAN.md`
 
-Goal: implement `BPETokenizer.train`, `encode`, and `decode` in `code/bpe_tokenizer.py` so the red harness turns green for VP-1, VP-2, VP-4, and VP-6.
+Goal: add explicit serialization hardening (`__getstate__`/`__setstate__`, cache/regex handling if needed) and prove byte-reproducibility across two unedited `generate_tokenizers.py` runs.
 
 Use this command pattern for verification in PowerShell:
 
 ```powershell
 $env:Path = "$env:APPDATA\Python\Python311\Scripts;$env:Path"
-uv run python code/align_check.py --only vp1,vp2,vp4,vp6
+uv run python code/align_check.py
 ```
 
 Or use the module form, which does not depend on PATH:
 
 ```powershell
-py -m uv run python code/align_check.py --only vp1,vp2,vp4,vp6
+py -m uv run python code/align_check.py
 ```
 
 Read before editing:
 
-- `.planning/phases/01-gates-first-submittable-tokenizer/01-02-PLAN.md`
+- `.planning/phases/01-gates-first-submittable-tokenizer/01-03-PLAN.md`
 - `.planning/phases/01-gates-first-submittable-tokenizer/01-CONTEXT.md`
 - `.planning/phases/01-gates-first-submittable-tokenizer/01-RESEARCH.md`
 - `.planning/phases/01-gates-first-submittable-tokenizer/01-VALIDATION.md`
@@ -90,7 +113,7 @@ Read before editing:
 - `decode` must be pure and length-preserving: ids -> token strings -> join -> replace space marker with real spaces. No strip/lower/normalization.
 - Guarantee at least one cross-word bigram and no token spanning 3+ words.
 - `encode` must never emit `[UNK]` id 1.
-- Keep tokenizer pickle-safe: no lambdas/closures/local classes/defaultdict(lambda) in persisted state; regex as pattern string; cache dropped/rebuilt in 01-03.
+- Keep tokenizer pickle-safe: no lambdas/closures/local classes/defaultdict(lambda) in persisted state; `01-03` should make this explicit with `__getstate__`/`__setstate__`.
 - No GPU run until local gates are green. Protect the 10h Tesla M60 budget.
 
 ## Open questions / caveats
@@ -98,6 +121,7 @@ Read before editing:
 - **Git remote:** none configured. Local handoff works in this folder; remote only matters for VM relay.
 - **GSD helper issue:** `node $HOME/.codex/gsd-core/bin/gsd-tools.cjs ...` currently fails because `../../../package.json` is missing from the local GSD install. Codex manually updated `STATE.md` and `ROADMAP.md` for `01-01`.
 - **uv PATH:** `uv` is installed in the user Python scripts directory. In PowerShell, either prepend `$env:APPDATA\Python\Python311\Scripts` to `PATH`, or run `py -m uv ...`.
+- **Current tokenizer note:** `BPETokenizer` currently has no compiled regex or cache, so VP-3 already passes. `01-03` should still implement the planned explicit state protocol and byte-reproducibility proof.
 - **Line endings:** Git reports LF-to-CRLF warnings on Windows. No functional issue observed.
 
 ## Key files map
