@@ -1,0 +1,7 @@
+domain,tokenizer_index,vocab_size,tokenizer_path,train_file,dev_file,tokens_per_char,tokens_per_second,encode_seconds,dev_chars,dev_tokens,reconstruction_rate
+1,1,4000,tuning\tokenizers\tokenizer_1_vocab4000.pkl,data\domain_1_train.txt,data\domain_1_dev.txt,0.31217898,90666450.5186,0.047928810120,11747463,3667311,1.000000
+2,2,4000,tuning\tokenizers\tokenizer_2_vocab4000.pkl,data\domain_2_train.txt,data\domain_2_dev.txt,0.30712300,86905579.4882,0.015763044357,3610485,1108863,1.000000
+1,1,8000,tuning\tokenizers\tokenizer_1_vocab8000.pkl,data\domain_1_train.txt,data\domain_1_dev.txt,0.28061540,68892441.7324,0.031889200211,11747463,3296519,1.000000
+2,2,8000,tuning\tokenizers\tokenizer_2_vocab8000.pkl,data\domain_2_train.txt,data\domain_2_dev.txt,0.26098571,98587372.5857,0.015975952148,3610485,942285,1.000000
+1,1,16000,tuning\tokenizers\tokenizer_1_vocab16000.pkl,data\domain_1_train.txt,data\domain_1_dev.txt,0.25758830,66164619.4114,0.031781911850,11747463,3026009,1.000000
+2,2,16000,tuning\tokenizers\tokenizer_2_vocab16000.pkl,data\domain_2_train.txt,data\domain_2_dev.txt,0.22937417,68898020.1726,0.010514736176,3610485,828152,1.000000
