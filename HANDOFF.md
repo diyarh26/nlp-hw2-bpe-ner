@@ -16,7 +16,7 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-26 (after 03-01 CPU sweep + VM runbook)
+- **Last updated by:** Claude - 2026-06-26 (after Phase 3 review + vendoring VM artifacts for GitHub transfer)
 - **Phase:** 3 of 6 - Per-Domain Tuning (Tokenizers 1 & 2)
 - **Phase status:** **03-01 complete locally** and **03-02 Task 1 runbook written**. Actual VM F1 runs (03-02 Task 2) and final selection/staging (03-03) are intentionally not run yet.
 - **Code state:** `code/bpe_tokenizer.py` unchanged from Phase 2: cached encode + **uncapped** full-corpus trainer. `code/tune_tokenizers.py` is now a Phase 3 measure-only harness; it loads generator-produced candidates and writes CPU metrics, but never trains tokenizers.
@@ -24,6 +24,7 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## What was just done (most recent first)
 
+- **Phase 3 review + VM transfer prep (Claude):** reviewed the generator-backed Phase 3 revision and **approved** it (SERDE-03 closed: `tune_tokenizers.py` is measure-only; 03-03 enforces a `fc /b` byte-identity cmp of staged tok1/tok2 vs a fresh `generate_tokenizers.py` run before shipping). CPU sweep verified clean (6 rows, reconstruction 1.0, monotonic efficiency curve). Found the dispatch blocker: no git remote + candidate pkls/tagged data gitignored, so the VM had no way to get them. Per user, going via GitHub: force-added the 6 candidate pkls + 4 `data/ner_data/*.tagged` files (`ea159d4`) and added `TASKS.md` as the repo/relay landing page. **Repo is not yet pushed** (gh not authenticated; private repo to be created).
 - **03-01 + 03-02 Task 1 (Codex):** revised Phase 3 plans for Claude's approved reproducibility fix. Candidate pkls now come only from unedited `generate_tokenizers.py`; `code/tune_tokenizers.py` is measure-only. Generated candidates for vocab grid `[4000, 8000, 16000]` into `tuning/_gen/{V}` and copied tok1/tok2 to `tuning/tokenizers/` (generation wall-times: 4000 = 200.1s, 8000 = 212.8s, 16000 = 241.6s). Ran the CPU sweep and wrote `tuning/results/cpu_sweep.csv`. Added `.planning/phases/03-per-domain-tuning/03-VM-F1-RUNBOOK.md` with six exact VM commands, first-run tok1@8000 timing step, logs, budget assumption, and stop-rule. Did not run VM/NER and did not run 03-03 staging.
 - **03 planning draft (Codex):** created `.planning/phases/03-per-domain-tuning/03-CONTEXT.md` plus `03-01-PLAN.md`, `03-02-PLAN.md`, and `03-03-PLAN.md`. The draft split Phase 3 into CPU-local sweep work, VM-only F1 scoring, and selection/regression.
 - **02-03 (Phase 2 closed):** the weighted word-chunk trainer was correct but still timed out on full domain-1 generation (1.21 M unique chunks; 73% singletons; heap churn + whole-chunk pair recounts). Claude rewrote the merge bookkeeping as `_train_merges` (int symbols, local-neighbour deltas, disciplined lazy heap, superset inverted index) producing identical merges. Domain-1 vocab-8000: ~124 s; full 3-tokenizer generation: ~273 s. Regenerated all 3 pkls, rebuilt the zip (checker-clean), verified byte-reproducibility and forbidden-file integrity. Removed the old `_build_pair_index`/`_apply_indexed_merge`/`_*_sequence_pairs`/`_best_indexed_pair`/`_push_pair_heap` helpers. `train_commands.txt` annotated with the uncapped trainer method.
@@ -33,9 +34,11 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## NEXT ACTION
 
-**dispatch the 6 VM F1 runs per 03-VM-F1-RUNBOOK.md (start with tok1@8000 to time it), then Claude reviews selection.**
+**(1) Push this repo to a PRIVATE GitHub remote, then (2) dispatch the 6 VM F1 runs per 03-VM-F1-RUNBOOK.md (start with tok1@8000 to time it), then Claude reviews selection.**
 
-Use:
+Push prerequisite: `gh auth login` (user, interactive) -> `gh repo create <name> --private --source=. --push`. The 6 candidate pkls + tagged data are committed (`ea159d4`) so the VM gets them on pull. Keep the repo private (graded coursework).
+
+For the VM step, use:
 
 - `.planning/phases/03-per-domain-tuning/03-VM-F1-RUNBOOK.md`
 - `tuning/tokenizers/tokenizer_1_vocab4000.pkl`
