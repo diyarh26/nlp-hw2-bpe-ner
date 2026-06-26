@@ -36,10 +36,10 @@ Committed scope for the submission. Each maps to a roadmap phase.
 
 ### Per-Domain Tuning & Competition (TUNE)
 
-- [ ] **TUNE-01**: Tokenizer 1 is trained/tuned on the Twitter domain (`domain_1_train.txt`).
-- [ ] **TUNE-02**: Tokenizer 2 is trained/tuned on the news domain (`domain_2_train.txt`).
-- [ ] **TUNE-03**: Vocab size is treated as a swept hyperparameter; a dev-set evaluation harness scores all three axes (tokens/char efficiency, tokens/sec speed, NER F1) to pick per-domain configs.
-- [ ] **TUNE-04**: Final tokenizer configs balance the efficiency/speed/F1 trade-off (aggressive enough for efficiency without wrecking entity-boundary alignment).
+- [x] **TUNE-01**: Tokenizer 1 is trained/tuned on the Twitter domain (`domain_1_train.txt`).
+- [x] **TUNE-02**: Tokenizer 2 is trained/tuned on the news domain (`domain_2_train.txt`).
+- [x] **TUNE-03**: Vocab size is treated as a swept hyperparameter; a dev-set evaluation harness scores all three axes (tokens/char efficiency, tokens/sec speed, NER F1) to pick per-domain configs.
+- [x] **TUNE-04**: Final tokenizer configs balance the efficiency/speed/F1 trade-off (aggressive enough for efficiency without wrecking entity-boundary alignment).
 
 ### Tokenizer 3 / Hidden-Domain Generalization (GEN)
 
@@ -50,7 +50,7 @@ Committed scope for the submission. Each maps to a roadmap phase.
 ### Validation & Evaluation (EVAL)
 
 - [x] **EVAL-01**: NER F1 ≥ 0.4 on `dev_1_binary.tagged` (domain 1) using tokenizer 1.
-- [ ] **EVAL-02**: NER F1 ≥ 0.4 on `dev_2_binary.tagged` (domain 2) using tokenizer 2.
+- [x] **EVAL-02**: NER F1 ≥ 0.4 on `dev_2_binary.tagged` (domain 2) using tokenizer 2.
 - [ ] **EVAL-03**: Tokenizer efficiency (tokens/char or tokens/sentence) and tokenization speed are measured and reported on the dev files for each tokenizer.
 - [ ] **EVAL-04**: All GPU NER runs are executed on the course VM within the 10h budget, after local gates are green.
 
@@ -102,14 +102,14 @@ Which phases cover which requirements. Populated during roadmap creation.
 | SPEED-01 | Phase 2 | Complete in 02-02 |
 | SPEED-02 | Phase 2 | Complete in 02-02 |
 | SPEED-03 | Phase 2 | Complete in 02-03 |
-| TUNE-01 | Phase 3 | Pending |
-| TUNE-02 | Phase 3 | Pending |
-| TUNE-03 | Phase 3 | Pending |
-| TUNE-04 | Phase 3 | Pending |
+| TUNE-01 | Phase 3 | Complete in 03-01 |
+| TUNE-02 | Phase 3 | Complete in 03-01 |
+| TUNE-03 | Phase 3 | Complete in 03-02 |
+| TUNE-04 | Phase 3 | Complete in 03-03 |
 | GEN-01 | Phase 4 | Pending |
 | GEN-02 | Phase 4 | Pending |
 | GEN-03 | Phase 4 | Pending |
-| EVAL-02 | Phase 5 | Pending |
+| EVAL-02 | Phase 3 | Complete in 03-03 (tok2 vocab 16000 VM F1 = 0.9557) |
 | EVAL-03 | Phase 5 | Pending |
 | EVAL-04 | Phase 5 | Pending |
 | SERDE-04 | Phase 5 | Pending |
@@ -125,4 +125,4 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-24*
-*Last updated: 2026-06-24 after roadmap traceability mapping (6 phases)*
+*Last updated: 2026-06-26 after Phase 3 per-domain tuning close-out*

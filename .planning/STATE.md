@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 3
-current_phase_name: Per-Domain Tuning (Tokenizers 1 & 2)
+current_phase: 4
+current_phase_name: Tokenizer 3 Hidden-Domain Generalization
 status: ready_to_plan
-stopped_at: Phase 2 complete (02-03 closed); next is planning Phase 3
+stopped_at: Phase 3 complete (03-03 closed); next is planning Phase 4
 last_updated: "2026-06-26T00:00:00.000Z"
 last_activity: 2026-06-26
-last_activity_desc: Closed 02-03 — uncapped incremental BPE trainer; full-corpus pkls regenerated, checker-clean
+last_activity_desc: Closed 03-03 — tok1 vocab 8000 and tok2 vocab 16000 selected and staged
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
-  percent: 33
+  completed_phases: 3
+  total_plans: 10
+  completed_plans: 10
+  percent: 50
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Three correct, reproducible BPE tokenizers that pass every hard gate and score well on the competition's three axes (efficiency, speed, F1), including the hidden domain.
-**Current focus:** Phase 2 - Fast Encode + Training Efficiency
+**Current focus:** Phase 4 - Tokenizer 3 Hidden-Domain Generalization
 
 ## Current Position
 
-Phase: 3 of 6 (Per-Domain Tuning) — Phase 2 complete
-Plan: Phase 2 closed (3/3); Phase 3 not yet planned
-Status: Ready to plan Phase 3
-Last activity: 2026-06-26 - Closed 02-03 (uncapped incremental trainer; full-corpus pkls, checker-clean)
+Phase: 4 of 6 (Tokenizer 3 Hidden-Domain Generalization) - Phase 3 complete
+Plan: Phase 3 closed (3/3); Phase 4 not yet planned
+Status: Ready to plan Phase 4
+Last activity: 2026-06-26 - Closed 03-03 (tok1 vocab 8000, tok2 vocab 16000 selected and staged)
 
-Progress: [###-------] 33% (2 of 6 phases complete; all planned plans done)
+Progress: [#####-----] 50% (3 of 6 phases complete; all planned plans done)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
+- Total plans completed: 10
 - Average duration: 23 min
 - Total execution time: 2.3 hours
 
@@ -49,11 +49,12 @@ Progress: [###-------] 33% (2 of 6 phases complete; all planned plans done)
 |-------|-------|-------|----------|
 | 1 | 4 | 4 | 30 min |
 | 2 | 3 | 3 | -- |
+| 3 | 3 | 3 | -- |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-02 (7 min), 01-03 (14 min), 01-04 (82 min), 02-01 (8 min), 02-02 (10 min)
-- Trend: Phase 1 hard gates are green; Phase 2 encode speed work is complete
+- Last 5 plans: 02-02 (10 min), 02-03, 03-01, 03-02, 03-03
+- Trend: Phase 3 tok1/tok2 tuning is closed; next risk is hidden-domain tok3 generalization
 
 *Updated after each plan completion*
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [02-01]: `code/speed_check.py` now provides slow replay encode oracle, cache/pickle probe, and baseline training probe.
 - [02-02]: `BPETokenizer.encode` now uses a runtime-only full-text cache with `_encode_uncached` and `_ids_from_symbols`; cache benchmark shows a clear repeated-call speed win.
 - [02-03]: Full-corpus training enabled via an integer-symbol incremental merge loop (`_train_merges`: local pair-count deltas + lazy heap + superset `pair->chunks` index), byte-identical to the full-recount oracle. Domain-1 vocab-8000 trains in ~2 min; all 3 pkls regenerated, checker-clean, byte-reproducible. `TRAIN_TEXT_LIMIT` removed. (Trainer rewrite done by Claude after Codex's chunk-dedup WIP still timed out.)
+- [03-01]: Candidate tok1/tok2 pickles were generated only through unedited `generate_tokenizers.py` for vocab sizes 4000, 8000, and 16000; `code/tune_tokenizers.py` measures CPU efficiency/speed without training.
+- [03-02]: VM F1 sweep completed on Tesla M60. Tok1 F1: 4000=0.4237, 8000=0.4352, 16000=0.3692. Tok2 F1: 4000=0.9610, 8000=0.9570, 16000=0.9557.
+- [03-03]: Selected tok1 vocab 8000 (best F1) and tok2 vocab 16000 (within 0.0053 F1 of best while best efficiency/speed); staged measured candidates into `trained_tokenizers/`.
 
 ### Pending Todos
 
@@ -103,5 +107,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-06-26
-Stopped at: Phase 2 complete (02-03 closed); next is planning Phase 3
-Resume file: HANDOFF.md (NEXT ACTION = plan Phase 3)
+Stopped at: Phase 3 complete (03-03 closed); next is planning Phase 4
+Resume file: HANDOFF.md (NEXT ACTION = plan Phase 4)

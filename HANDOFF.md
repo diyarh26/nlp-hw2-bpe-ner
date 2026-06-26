@@ -16,14 +16,15 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-26 (after Phase 3 VM F1 sweep)
-- **Phase:** 3 of 6 - Per-Domain Tuning (Tokenizers 1 & 2)
-- **Phase status:** **03-01 complete locally** and **03-02 VM F1 sweep complete**. Final selection/staging (03-03) is intentionally not run yet.
-- **Code state:** `code/bpe_tokenizer.py` unchanged from Phase 2: cached encode + **uncapped** full-corpus trainer. `code/tune_tokenizers.py` is now a Phase 3 measure-only harness; it loads generator-produced candidates and writes CPU metrics, but never trains tokenizers.
-- **Validation state:** Candidate pkls were produced by unedited `generate_tokenizers.py` for vocab sizes 4000/8000/16000, copied to `tuning/tokenizers/`, and all six load via `BaseTokenizer.load`. `tuning/results/cpu_sweep.csv` has 6 valid rows, positive metrics, and reconstruction rate 1.0. VM F1 logs live in `tuning/logs/vm_f1/`, with summary rows in `tuning/results/vm_f1_results.csv`. Candidate copy hashes match their generator outputs. `speed_check.py --only all` PASS, `align_check.py` PASS, forbidden-file hashes intact from the prior handoff; no code files were changed during the VM sweep.
+- **Last updated by:** Codex - 2026-06-26 (after Phase 3 selection/staging)
+- **Phase:** 4 of 6 - Tokenizer 3 Hidden-Domain Generalization
+- **Phase status:** **Phase 3 complete.** Tok1/tok2 per-domain tuning is closed; Phase 4 is ready to plan.
+- **Code state:** `code/bpe_tokenizer.py` unchanged from Phase 2: cached encode + **uncapped** full-corpus trainer. `code/tune_tokenizers.py` remains the Phase 3 measure-only harness; it loads generator-produced candidates and writes CPU metrics, but never trains tokenizers.
+- **Validation state:** Selected/staged `trained_tokenizers/tokenizer_1.pkl` = tok1 vocab 8000 and `trained_tokenizers/tokenizer_2.pkl` = tok2 vocab 16000. Tok3 remains the Phase 2 vocab-8000 baseline for Phase 4. Fresh-generator byte comparisons passed for staged tok1/tok2. `speed_check.py --only all` PASS, `align_check.py` PASS, `build_submission.py` PASS, `check_submission.py HW2_214034621.zip` PASS, forbidden-file hashes intact.
 
 ## What was just done (most recent first)
 
+- **03-03 selection/staging (Codex):** pulled/verified VM results already present from `origin/master`, then applied the user-approved selection: tok1 vocab **8000** and tok2 vocab **16000**. Tok1 8000 had best tok1 VM F1 (**0.4352**). Tok2 16000 was selected because it is within **0.0053** F1 of best tok2 while giving the best efficiency (`0.22937417` tokens/char) and fastest VM wall-time (`3.2012` min). Copied measured candidates into `trained_tokenizers/`, preserved tok3 vocab-8000 baseline, and updated `train_commands.txt`. Verified staged tok1/tok2 match measured candidates and fresh unedited generator output (`tuning/_cmp/8000/tokenizer_1.pkl`, `tuning/_cmp/16000/tokenizer_2.pkl`). Wrote `03-01/02/03-SUMMARY.md`, updated `.planning/ROADMAP.md`, `.planning/STATE.md`, and `.planning/REQUIREMENTS.md` for Phase 3 close-out. Validation: `speed_check.py --only all` PASS, `align_check.py` PASS, `build_submission.py` PASS, `check_submission.py HW2_214034621.zip` PASS, forbidden-file hashes all match.
 - **03-02 Task 2 VM F1 sweep (Codex):** cloned the private repo on the Tesla M60 VM, installed missing `uv`, ran `uv sync`, and confirmed CUDA: `True Tesla M60`. Timed the required first run (`tokenizer_1_vocab8000` on `train_1/dev_1_binary.tagged`): Best F1 **0.4352**, wall-time **0.9443 min**, so the stop-rule passed (`0.9443 x 6 ~= 5.7 min`, below the 4.5 h cap). Completed the remaining five runbook commands and wrote `tuning/results/vm_f1_results.csv`: tok1 vocab4000 **0.4237 / 0.8820 min**, tok1 vocab8000 **0.4352 / 0.9443 min**, tok1 vocab16000 **0.3692 / 0.8217 min**; tok2 vocab4000 **0.9610 / 3.6005 min**, tok2 vocab8000 **0.9570 / 3.3208 min**, tok2 vocab16000 **0.9557 / 3.2012 min**. Captured logs under `tuning/logs/vm_f1/`. Did not edit forbidden files, change NER hyperparameters, or run 03-03 selection/staging.
 - **Phase 3 review + VM transfer prep (Claude):** reviewed the generator-backed Phase 3 revision and **approved** it (SERDE-03 closed: `tune_tokenizers.py` is measure-only; 03-03 enforces a `fc /b` byte-identity cmp of staged tok1/tok2 vs a fresh `generate_tokenizers.py` run before shipping). CPU sweep verified clean (6 rows, reconstruction 1.0, monotonic efficiency curve). Found the dispatch blocker: no git remote + candidate pkls/tagged data gitignored, so the VM had no way to get them. Per user, going via GitHub: force-added the 6 candidate pkls + 4 `data/ner_data/*.tagged` files (`ea159d4`) and added `TASKS.md` as the repo/relay landing page. **Pushed to private repo `diyarh26/nlp-hw2-bpe-ner` (origin/master).** VM-Codex dispatch prompt handed to the user.
 - **03-01 + 03-02 Task 1 (Codex):** revised Phase 3 plans for Claude's approved reproducibility fix. Candidate pkls now come only from unedited `generate_tokenizers.py`; `code/tune_tokenizers.py` is measure-only. Generated candidates for vocab grid `[4000, 8000, 16000]` into `tuning/_gen/{V}` and copied tok1/tok2 to `tuning/tokenizers/` (generation wall-times: 4000 = 200.1s, 8000 = 212.8s, 16000 = 241.6s). Ran the CPU sweep and wrote `tuning/results/cpu_sweep.csv`. Added `.planning/phases/03-per-domain-tuning/03-VM-F1-RUNBOOK.md` with six exact VM commands, first-run tok1@8000 timing step, logs, budget assumption, and stop-rule. Did not run VM/NER and did not run 03-03 staging.
@@ -35,7 +36,9 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## NEXT ACTION
 
-**Claude reviews Phase 3 selection (03-03): apply the knee rule to cpu_sweep.csv + vm_f1_results.csv.**
+**Plan Phase 4: Tokenizer 3 Hidden-Domain Generalization.**
+
+Start from `.planning/ROADMAP.md` Phase 4 and `.planning/STATE.md`. Phase 4 should design tokenizer 3's domain-1+2 mix strategy, preferably balanced/downsampled and deduped, then replace the Phase 2 tok3 baseline only after local gates remain green.
 
 ## Hard rules
 
@@ -51,11 +54,11 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 ## Open questions / caveats
 
 - **Git remote:** `origin` = private GitHub `diyarh26/nlp-hw2-bpe-ner` (branch `master`). VM-Codex pulls from here. The 6 candidate pkls + 4 tagged files were force-added (gitignored otherwise; untrack with `git rm --cached` after the sweep). The ~95MB raw corpus stays gitignored — not needed for the F1 sweep.
-- **Phase 3 status:** CPU sweep and VM F1 sweep are complete; selection/staging is not. Do not run `03-03` until Claude reviews the selection.
+- **Phase 3 status:** Complete. Tok1 is staged at vocab 8000; tok2 is staged at vocab 16000; tok3 remains the Phase 2 vocab-8000 baseline pending Phase 4.
 - **Trainer note:** `TRAIN_TEXT_LIMIT` is gone; full generation is feasible (~3.3-4.0 min per full 3-tokenizer candidate run in Phase 3). If Phase 3 changes the trainer, re-confirm `speed_check.py --only train` (oracle equality) and a small double-run reproducibility check.
 - **uv PATH:** run Python via `py -m uv run python ...`.
 - **Checker encoding:** on Windows set `$env:PYTHONIOENCODING='utf-8'` before `check_submission.py` (otherwise printing `▁` can fail even when the submission is valid).
-- **Ignored deliverables:** `trained_tokenizers/`, `models/`, `HW2_214034621.zip` are gitignored. Rebuild: `py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers` then `py -m uv run python code/build_submission.py`.
+- **Ignored deliverables:** `trained_tokenizers/`, `models/`, `HW2_214034621.zip`, and `tuning/_cmp/` are gitignored/local. Current local staged deliverable uses tok1 vocab 8000, tok2 vocab 16000, tok3 vocab 8000. Rebuild after Phase 3 selection by copying selected candidate pkls from `tuning/tokenizers/` into `trained_tokenizers/`, then running `py -m uv run python code/build_submission.py`.
 - **GSD helper:** local `gsd-tools.cjs` may fail (missing package metadata); state/roadmap updates can be done by hand.
 - **Line endings:** Git reports LF->CRLF warnings on Windows; no functional impact.
 

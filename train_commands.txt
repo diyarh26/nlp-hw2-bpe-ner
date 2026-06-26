@@ -1,12 +1,26 @@
-python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
+Current staged tokenizers use per-tokenizer vocab choices selected in Phase 3.
+The unedited generator accepts one `--vocab_size` per run, so tok1 and tok2
+are reproduced by separate generator runs and then copied into
+`trained_tokenizers/`.
 
-Default train-file mapping used:
-tokenizer_1.pkl: --train_files_1 domain_1_train.txt
-tokenizer_2.pkl: --train_files_2 domain_2_train.txt
-tokenizer_3.pkl: --train_files_3 domain_1_train.txt domain_2_train.txt
+Default train-file mapping used by `generate_tokenizers.py`:
+tokenizer_1.pkl: domain_1_train.txt
+tokenizer_2.pkl: domain_2_train.txt
+tokenizer_3.pkl: domain_1_train.txt domain_2_train.txt
 
-Environment command used locally:
-py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
+Phase 3 selected tokenizer commands:
+
+tokenizer_1.pkl (Twitter/domain 1, selected vocab 8000):
+py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir tuning/_cmp/8000
+copy tuning/_cmp/8000/tokenizer_1.pkl trained_tokenizers/tokenizer_1.pkl
+
+tokenizer_2.pkl (news/domain 2, selected vocab 16000):
+py -m uv run python generate_tokenizers.py --vocab_size 16000 --seed 42 --output_dir tuning/_cmp/16000
+copy tuning/_cmp/16000/tokenizer_2.pkl trained_tokenizers/tokenizer_2.pkl
+
+tokenizer_3.pkl (Phase 2 baseline until Phase 4 hidden-domain generalization):
+py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir tuning/_cmp/8000
+copy tuning/_cmp/8000/tokenizer_3.pkl trained_tokenizers/tokenizer_3.pkl
 
 Training method (Phase 2): the uncapped weighted word-chunk BPE trainer with
 incremental local pair-count deltas and an inverted pair->chunks index. No
