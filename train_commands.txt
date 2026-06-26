@@ -22,6 +22,16 @@ tokenizer_3.pkl (Phase 2 baseline until Phase 4 hidden-domain generalization):
 py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir tuning/_cmp/8000
 copy tuning/_cmp/8000/tokenizer_3.pkl trained_tokenizers/tokenizer_3.pkl
 
+Phase 4 tokenizer 3 (hidden-domain generalization) - mix recipe (GEN-01/D-01/D-02):
+Build the balanced, exact-line-deduped domain-1+2 training mix: all of domain 2
+plus a deterministic same-count SHA-256 sample of domain 1, deduped AFTER mixing.
+Deterministic and byte-identical across runs (see output_sha256 in
+tuning/results/tok3_mix_manifest.json). The ~45MB mix is a regenerable,
+gitignored artifact under data/.
+py -m uv run python code/make_tok3_mix.py --seed 42 --domain1 data/domain_1_train.txt --domain2 data/domain_2_train.txt --output data/tok3_mix_d1sample_d2all_seed42.txt --manifest tuning/results/tok3_mix_manifest.json
+(Candidate generation, CPU/VM evidence, selection, and the final staged tok3
+generator command are added in Phase 4 steps 04-02..04-04.)
+
 Training method (Phase 2): the uncapped weighted word-chunk BPE trainer with
 incremental local pair-count deltas and an inverted pair->chunks index. No
 TRAIN_TEXT_LIMIT or training-data cap is used; the full corpora are trained

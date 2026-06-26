@@ -1,0 +1,17 @@
+{
+  "seed": 42,
+  "domain_1_input": "data/domain_1_train.txt",
+  "domain_2_input": "data/domain_2_train.txt",
+  "domain_1_input_sha256": "1b063716f1be700cd91e94c138db0d80dfcc64211458de43f0bca35b587035b9",
+  "domain_2_input_sha256": "0cb585e69bad4fcbad1cdd1230c539fbf227ee5870656a125f2e1b28021cfd66",
+  "domain_1_lines_total": 1280000,
+  "domain_2_lines_total": 319696,
+  "domain_1_sample_lines": 319696,
+  "domain_1_unique_lines": 1266231,
+  "domain_2_unique_lines": 316448,
+  "pre_dedup_lines": 639392,
+  "post_mix_lines": 634359,
+  "post_mix_duplicate_lines_removed": 5033,
+  "output_file": "data/tok3_mix_d1sample_d2all_seed42.txt",
+  "output_sha256": "82379e6a2fbbfe5e2e4c6204a95765140117dfaf828052e9c469bd53725ed804"
+}
