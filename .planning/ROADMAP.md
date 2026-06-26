@@ -106,7 +106,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. An out-of-domain / OOV stress test confirms tokenizer 3 produces zero `[UNK]` on unseen-character and held-out inputs via byte fallback.
   3. A reasoned, evidence-backed evaluation of tokenizer 3's expected hidden-domain efficiency/F1 behavior is written up for the report, and tokenizer 3 passes all Phase 1 gates.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+- [ ] 04-01-PLAN.md - Deterministic tok3 mix helper, generated mix artifact, manifest, and reproduction command
+- [ ] 04-02-PLAN.md - Generator-backed tok3 candidates at 4000/8000/16000 plus CPU/OOV evidence
+- [ ] 04-03-PLAN.md - VM F1 runbook and visible-domain tok3 results with CUDA/time-left stop-rule
+- [ ] 04-04-PLAN.md - Hidden-generalization scoring, selected tok3 staging, submission rebuild, and planning close-out
 
 ### Phase 5: VM NER Evaluation & Measurement
 
