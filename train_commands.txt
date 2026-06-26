@@ -7,3 +7,9 @@ tokenizer_3.pkl: --train_files_3 domain_1_train.txt domain_2_train.txt
 
 Environment command used locally:
 py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
+
+Training method (Phase 2): the uncapped weighted word-chunk BPE trainer with
+incremental local pair-count deltas and an inverted pair->chunks index. No
+TRAIN_TEXT_LIMIT or training-data cap is used; the full corpora are trained
+(domain_1 ~95MB, domain_2 ~29MB, tokenizer_3 on both). Training is deterministic
+(no RNG), so repeated runs produce byte-identical tokenizer_{1,2,3}.pkl.

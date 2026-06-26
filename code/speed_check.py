@@ -147,7 +147,12 @@ def slow_replay_encode(tokenizer: BPETokenizer, text: str) -> List[int]:
 
 def train_full_recount_oracle(tokenizer: BPETokenizer, texts: List[str]) -> None:
     tokenizer._reset_vocab()
-    sequences = [tokenizer._text_to_train_symbols(text) for text in texts if text]
+    sequences = [
+        chunk
+        for text in texts
+        if text
+        for chunk in tokenizer._text_to_chunks(text)
+    ]
 
     base_tokens = set(tokenizer.byte_tokens.values())
     base_tokens.add(tokenizer.space_token)
@@ -158,7 +163,9 @@ def train_full_recount_oracle(tokenizer: BPETokenizer, texts: List[str]) -> None
 
     while len(tokenizer.token_to_id) < tokenizer.vocab_size:
         if len(tokenizer.token_to_id) == tokenizer.vocab_size - 1 and not tokenizer._has_bigram_token():
-            tokenizer._force_bigram(sequences)
+            pair = tokenizer._forced_cross_word_bigram_pair(texts)
+            if pair is not None:
+                tokenizer._record_merge(pair)
             break
         pair_counts = tokenizer._count_pairs(sequences)
         candidates = [
@@ -175,7 +182,9 @@ def train_full_recount_oracle(tokenizer: BPETokenizer, texts: List[str]) -> None
         sequences = tokenizer._apply_pair_to_sequences(sequences, pair)
 
     if len(tokenizer.token_to_id) < tokenizer.vocab_size and not tokenizer._has_bigram_token():
-        tokenizer._force_bigram(sequences)
+        pair = tokenizer._forced_cross_word_bigram_pair(texts)
+        if pair is not None:
+            tokenizer._record_merge(pair)
 
 
 def check_oracle() -> None:

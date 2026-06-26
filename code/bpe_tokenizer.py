@@ -1,14 +1,16 @@
 """
 Byte Pair Encoding tokenizer for the HW2 NER scaffold.
 
-Phase 1 intentionally favors correctness over speed. Phase 2 can replace the
-naive merge loops with faster indexed structures while keeping this behavior as
-the oracle.
+Training is a deterministic char-up BPE over weighted word chunks. The merge
+loop uses an integer-symbol representation with local-neighbor pair-count deltas
+and a lazy max-heap, so it scales with the number of UNIQUE word chunks rather
+than the raw corpus. It produces merges/vocab byte-identical to the slow
+full-recount oracle in speed_check.py (the behavioral ground truth).
 """
 
-from collections import Counter, defaultdict
+from collections import Counter
 import heapq
-from typing import DefaultDict, Dict, Iterable, List, Sequence, Set, Tuple
+from typing import Dict, Iterable, List, Sequence, Set, Tuple
 
 import regex
 
@@ -16,8 +18,9 @@ from base_tokenizer import BaseTokenizer
 
 
 SPACE_TOKEN = "▁"
-BYTE_PREFIX = "\ue000"
+BYTE_PREFIX = ""
 PRETOKEN_PATTERN = r"\X"
+FORCED_BIGRAM_SAMPLE_LINES = 4000
 
 
 def _pair_sort_key(item: Tuple[Tuple[str, str], int]) -> Tuple[int, str, str]:
@@ -64,9 +67,9 @@ class BPETokenizer(BaseTokenizer):
         self._init_runtime_state()
 
     def train(self, texts: List[str]) -> None:
-        """Train a deterministic char-up BPE tokenizer on weighted unique texts."""
+        """Train a deterministic char-up BPE tokenizer on weighted word chunks."""
         self._reset_vocab()
-        sequences, weights = self._weighted_sequences(texts)
+        sequences, weights = self._weighted_chunk_sequences(texts)
 
         base_tokens = set(self.byte_tokens.values())
         base_tokens.add(self.space_token)
@@ -75,19 +78,150 @@ class BPETokenizer(BaseTokenizer):
         for token in sorted(base_tokens):
             self._add_token(token)
 
-        pair_counts, pair_to_sequences, pair_heap = self._build_pair_index(sequences, weights)
-        while len(self.token_to_id) < self.vocab_size:
-            if len(self.token_to_id) == self.vocab_size - 1 and not self._has_bigram_token():
-                self._force_bigram(sequences)
-                break
-            pair = self._best_indexed_pair(pair_counts, pair_heap)
-            if pair is None:
-                break
-            self._record_merge(pair)
-            self._apply_indexed_merge(sequences, weights, pair, pair_counts, pair_to_sequences, pair_heap)
+        self._train_merges(sequences, weights, texts)
 
-        if len(self.token_to_id) < self.vocab_size and not self._has_bigram_token():
-            self._force_bigram(sequences)
+    def _train_merges(
+        self,
+        sequences: Sequence[Sequence[str]],
+        weights: Sequence[int],
+        texts: Sequence[str],
+    ) -> None:
+        """Efficient incremental BPE merge loop (identical result to the oracle).
+
+        Symbols are interned to dense integer ids. After each merge only the
+        local neighbour pairs at each merge site are updated (no whole-chunk
+        recount), and only pairs whose count changed are re-pushed onto a lazy
+        max-heap. ``pair_chunks`` membership is kept as a superset (entries are
+        only added, never pruned on decrement), so a merge never misses a chunk
+        that still contains the pair; stale entries are harmless no-op scans.
+        """
+        space_token = self.space_token
+
+        str_to_local: Dict[str, int] = {}
+        local_to_str: List[str] = []
+        local_spaces: List[int] = []
+
+        def intern(symbol: str) -> int:
+            local_id = str_to_local.get(symbol)
+            if local_id is None:
+                local_id = len(local_to_str)
+                str_to_local[symbol] = local_id
+                local_to_str.append(symbol)
+                local_spaces.append(symbol.count(space_token))
+            return local_id
+
+        seqs: List[List[int]] = [[intern(sym) for sym in seq] for seq in sequences]
+
+        pair_counts: Dict[Tuple[int, int], int] = {}
+        pair_chunks: Dict[Tuple[int, int], Set[int]] = {}
+        heap: List[Tuple[int, str, str, Tuple[int, int]]] = []
+
+        for chunk_id, seq in enumerate(seqs):
+            weight = weights[chunk_id]
+            for index in range(len(seq) - 1):
+                left = seq[index]
+                right = seq[index + 1]
+                if local_spaces[left] + local_spaces[right] > 1:
+                    continue
+                key = (left, right)
+                pair_counts[key] = pair_counts.get(key, 0) + weight
+                members = pair_chunks.get(key)
+                if members is None:
+                    members = set()
+                    pair_chunks[key] = members
+                members.add(chunk_id)
+        for key, count in pair_counts.items():
+            heapq.heappush(heap, (-count, local_to_str[key[0]], local_to_str[key[1]], key))
+
+        changed: Set[Tuple[int, int]] = set()
+
+        def adjust(left: int, right: int, chunk_id: int, delta: int) -> None:
+            if local_spaces[left] + local_spaces[right] > 1:
+                return
+            key = (left, right)
+            new_count = pair_counts.get(key, 0) + delta
+            if new_count <= 0:
+                pair_counts.pop(key, None)
+                pair_chunks.pop(key, None)
+            else:
+                pair_counts[key] = new_count
+                if delta > 0:
+                    members = pair_chunks.get(key)
+                    if members is None:
+                        members = set()
+                        pair_chunks[key] = members
+                    members.add(chunk_id)
+            changed.add(key)
+
+        target = self.vocab_size
+        while len(self.token_to_id) < target:
+            if len(self.token_to_id) == target - 1 and not self._has_bigram_token():
+                pair = self._forced_cross_word_bigram_pair(texts)
+                if pair is not None:
+                    self._record_merge(pair)
+                break
+
+            best_key = None
+            while heap:
+                neg_count, _left_str, _right_str, key = heapq.heappop(heap)
+                live = pair_counts.get(key, 0)
+                if live <= 0 or -neg_count != live:
+                    continue
+                best_key = key
+                break
+            if best_key is None:
+                break
+
+            left_id, right_id = best_key
+            left_str = local_to_str[left_id]
+            right_str = local_to_str[right_id]
+            self._record_merge((left_str, right_str))
+            merged_id = intern(left_str + right_str)
+
+            chunk_ids = pair_chunks.pop(best_key, None)
+            pair_counts.pop(best_key, None)
+            if not chunk_ids:
+                continue
+
+            changed.clear()
+            for chunk_id in chunk_ids:
+                seq = seqs[chunk_id]
+                length = len(seq)
+                weight = weights[chunk_id]
+                new_seq: List[int] = []
+                index = 0
+                while index < length:
+                    if (
+                        index + 1 < length
+                        and seq[index] == left_id
+                        and seq[index + 1] == right_id
+                    ):
+                        left_neighbor = new_seq[-1] if new_seq else None
+                        right_neighbor = seq[index + 2] if index + 2 < length else None
+                        if left_neighbor is not None:
+                            adjust(left_neighbor, left_id, chunk_id, -weight)
+                        if right_neighbor is not None:
+                            adjust(right_id, right_neighbor, chunk_id, -weight)
+                        new_seq.append(merged_id)
+                        if left_neighbor is not None:
+                            adjust(left_neighbor, merged_id, chunk_id, weight)
+                        if right_neighbor is not None:
+                            adjust(merged_id, right_neighbor, chunk_id, weight)
+                        index += 2
+                    else:
+                        new_seq.append(seq[index])
+                        index += 1
+                seqs[chunk_id] = new_seq
+
+            for key in changed:
+                count = pair_counts.get(key, 0)
+                if count > 0:
+                    heapq.heappush(heap, (-count, local_to_str[key[0]], local_to_str[key[1]], key))
+
+        if len(self.token_to_id) < target and not self._has_bigram_token():
+            pair = self._forced_cross_word_bigram_pair(texts)
+            if pair is not None:
+                self._record_merge(pair)
 
     def encode(self, text: str) -> List[int]:
         """Convert a text string into token IDs, never emitting [UNK]."""
@@ -157,6 +291,20 @@ class BPETokenizer(BaseTokenizer):
     def _text_to_train_symbols(self, text: str) -> List[str]:
         return [self.space_token if char == " " else char for char in text]
 
+    def _text_to_chunks(self, text: str) -> List[List[str]]:
+        symbols = self._text_to_train_symbols(text)
+        chunks: List[List[str]] = []
+        current: List[str] = []
+        for symbol in symbols:
+            if symbol == self.space_token and current:
+                chunks.append(current)
+                current = [symbol]
+            else:
+                current.append(symbol)
+        if current:
+            chunks.append(current)
+        return chunks
+
     def _text_to_encode_symbols(self, text: str) -> List[str]:
         symbols: List[str] = []
         for char in text:
@@ -177,127 +325,19 @@ class BPETokenizer(BaseTokenizer):
                     counts[pair] += 1
         return counts
 
-    def _weighted_sequences(self, texts: Sequence[str]) -> Tuple[List[List[str]], List[int]]:
-        text_counts = Counter(text for text in texts if text)
+    def _weighted_chunk_sequences(self, texts: Sequence[str]) -> Tuple[List[List[str]], List[int]]:
+        chunk_counts: Counter = Counter()
+        for text in texts:
+            if not text:
+                continue
+            for chunk in self._text_to_chunks(text):
+                chunk_counts[tuple(chunk)] += 1
         sequences: List[List[str]] = []
         weights: List[int] = []
-        for text in sorted(text_counts):
-            sequences.append(self._text_to_train_symbols(text))
-            weights.append(text_counts[text])
+        for chunk in sorted(chunk_counts):
+            sequences.append(list(chunk))
+            weights.append(chunk_counts[chunk])
         return sequences, weights
-
-    def _build_pair_index(
-        self, sequences: Sequence[Sequence[str]], weights: Sequence[int]
-    ) -> Tuple[Counter, DefaultDict[Tuple[str, str], Set[int]], List[Tuple[int, str, str, Tuple[str, str]]]]:
-        pair_counts: Counter = Counter()
-        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]] = defaultdict(set)
-        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]] = []
-        for sequence_id, sequence in enumerate(sequences):
-            self._add_sequence_pairs(
-                sequence_id,
-                sequence,
-                weights[sequence_id],
-                pair_counts,
-                pair_to_sequences,
-                pair_heap,
-            )
-        return pair_counts, pair_to_sequences, pair_heap
-
-    def _sequence_pair_counts(self, sequence: Sequence[str]) -> Counter:
-        counts: Counter = Counter()
-        for index in range(len(sequence) - 1):
-            pair = (sequence[index], sequence[index + 1])
-            if self._legal_merge(pair[0], pair[1]):
-                counts[pair] += 1
-        return counts
-
-    def _push_pair_heap(
-        self,
-        pair: Tuple[str, str],
-        pair_counts: Counter,
-        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
-    ) -> None:
-        count = pair_counts.get(pair, 0)
-        if count > 0:
-            heapq.heappush(pair_heap, (-count, pair[0], pair[1], pair))
-
-    def _add_sequence_pairs(
-        self,
-        sequence_id: int,
-        sequence: Sequence[str],
-        weight: int,
-        pair_counts: Counter,
-        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]],
-        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
-    ) -> None:
-        for pair, count in self._sequence_pair_counts(sequence).items():
-            pair_counts[pair] += count * weight
-            pair_to_sequences[pair].add(sequence_id)
-            self._push_pair_heap(pair, pair_counts, pair_heap)
-
-    def _remove_sequence_pairs(
-        self,
-        sequence_id: int,
-        sequence: Sequence[str],
-        weight: int,
-        pair_counts: Counter,
-        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]],
-        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
-    ) -> None:
-        for pair, count in self._sequence_pair_counts(sequence).items():
-            pair_counts[pair] -= count * weight
-            if pair_counts[pair] <= 0:
-                pair_counts.pop(pair, None)
-            members = pair_to_sequences.get(pair)
-            if members is not None:
-                members.discard(sequence_id)
-                if not members:
-                    pair_to_sequences.pop(pair, None)
-            self._push_pair_heap(pair, pair_counts, pair_heap)
-
-    def _best_indexed_pair(
-        self, pair_counts: Counter, pair_heap: List[Tuple[int, str, str, Tuple[str, str]]]
-    ) -> Tuple[str, str] | None:
-        while pair_heap:
-            negative_count, _left, _right, pair = heapq.heappop(pair_heap)
-            count = pair_counts.get(pair, 0)
-            if count <= 0 or -negative_count != count:
-                continue
-            if pair in self.merge_ranks or not self._legal_merge(pair[0], pair[1]):
-                continue
-            return pair
-        return None
-
-    def _apply_indexed_merge(
-        self,
-        sequences: List[List[str]],
-        weights: Sequence[int],
-        pair: Tuple[str, str],
-        pair_counts: Counter,
-        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]],
-        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
-    ) -> None:
-        impacted = sorted(pair_to_sequences.get(pair, set()))
-        for sequence_id in impacted:
-            sequence = sequences[sequence_id]
-            self._remove_sequence_pairs(
-                sequence_id,
-                sequence,
-                weights[sequence_id],
-                pair_counts,
-                pair_to_sequences,
-                pair_heap,
-            )
-            merged_sequence = self._apply_pair(sequence, pair)
-            sequences[sequence_id] = merged_sequence
-            self._add_sequence_pairs(
-                sequence_id,
-                merged_sequence,
-                weights[sequence_id],
-                pair_counts,
-                pair_to_sequences,
-                pair_heap,
-            )
 
     def _legal_merge(self, left: str, right: str) -> bool:
         return (left + right).count(self.space_token) <= 1
@@ -350,20 +390,25 @@ class BPETokenizer(BaseTokenizer):
                 return True
         return False
 
-    def _force_bigram(self, sequences: Sequence[Sequence[str]]) -> None:
-        pair_counts = self._count_pairs(sequences)
-        candidates = [
-            (pair, count)
-            for pair, count in pair_counts.items()
-            if count > 0
-            and pair not in self.merge_ranks
-            and self._legal_merge(pair[0], pair[1])
-            and self.space_token in (pair[0] + pair[1])
-        ]
-        if not candidates:
-            return
-        pair, _count = min(candidates, key=_pair_sort_key)
-        self._record_merge(pair)
+    def _forced_cross_word_bigram_pair(self, texts: Sequence[str]) -> Tuple[str, str] | None:
+        line_counts = Counter(text for text in texts if text)
+        ordered = sorted(line_counts.items(), key=lambda item: (-item[1], item[0]))
+        sample = [line for line, _count in ordered[:FORCED_BIGRAM_SAMPLE_LINES]]
+        counts: Counter = Counter()
+        for line in sample:
+            symbols = self._apply_ranked_merges(self._text_to_encode_symbols(line))
+            for index in range(len(symbols) - 1):
+                left = symbols[index]
+                right = symbols[index + 1]
+                pair = (left, right)
+                if pair in self.merge_ranks or not self._legal_merge(left, right):
+                    continue
+                surface = (left + right).replace(self.space_token, " ").strip()
+                if surface.count(" ") == 1:
+                    counts[pair] += 1
+        if not counts:
+            return None
+        return min(counts.items(), key=_pair_sort_key)[0]
 
     def _non_special_tokens(self) -> Iterable[str]:
         for token in self.token_to_id:
