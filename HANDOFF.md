@@ -16,14 +16,15 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Claude - 2026-06-26 (after 02-03 close-out)
+- **Last updated by:** Codex - 2026-06-26 (after Phase 3 planning draft)
 - **Phase:** 3 of 6 - Per-Domain Tuning (Tokenizers 1 & 2)
-- **Phase status:** **Phase 2 COMPLETE** (02-01, 02-02, 02-03 all closed). Phase 3 is **not yet planned**.
+- **Phase status:** **Phase 3 draft planned** under `.planning/phases/03-per-domain-tuning/`; awaiting Claude review before execution.
 - **Code state:** `code/bpe_tokenizer.py` = cached encode + **uncapped** full-corpus trainer. `train()` -> `_train_merges()`: integer-symbol incremental merge loop with local pair-count deltas, a lazy max-heap, and a superset `pair->chunks` inverted index. Byte-identical merges to the full-recount oracle. No `TRAIN_TEXT_LIMIT`.
 - **Validation state:** `speed_check.py --only all` PASS (oracle + cache + train==full-recount), `align_check.py` PASS (VP1-4,6). Full `generate_tokenizers.py --vocab_size 8000 --seed 42` completes in ~4.5 min; all 3 pkls load; `check_submission.py HW2_214034621.zip` exits 0 with no `[ERROR]`; tokenizers byte-reproducible across double-runs; forbidden-file hashes intact. `trained_tokenizers/` and `HW2_214034621.zip` are ignored local artifacts (rebuild with the commands below).
 
 ## What was just done (most recent first)
 
+- **03 planning draft (Codex):** created `.planning/phases/03-per-domain-tuning/03-CONTEXT.md` plus `03-01-PLAN.md`, `03-02-PLAN.md`, and `03-03-PLAN.md`. The draft splits Phase 3 into CPU-local sweep work, VM-only F1 scoring, and selection/regression. It proposes vocab grid `[4000, 8000, 16000]`, `code/tune_tokenizers.py` as the sweep harness, six VM F1 runs with a <=45 min/run assumption, and a knee rule of smallest vocab within 0.02 absolute F1 of best, tie-broken by lower tokens/char then higher tokens/sec. No code or VM/NER execution was performed.
 - **02-03 (Phase 2 closed):** the weighted word-chunk trainer was correct but still timed out on full domain-1 generation (1.21 M unique chunks; 73% singletons; heap churn + whole-chunk pair recounts). Claude rewrote the merge bookkeeping as `_train_merges` (int symbols, local-neighbour deltas, disciplined lazy heap, superset inverted index) producing identical merges. Domain-1 vocab-8000: ~124 s; full 3-tokenizer generation: ~273 s. Regenerated all 3 pkls, rebuilt the zip (checker-clean), verified byte-reproducibility and forbidden-file integrity. Removed the old `_build_pair_index`/`_apply_indexed_merge`/`_*_sequence_pairs`/`_best_indexed_pair`/`_push_pair_heap` helpers. `train_commands.txt` annotated with the uncapped trainer method.
 - **02-02:** cached public `encode` + `_encode_uncached` + `_ids_from_symbols`; cache speed win proven; pickle-safe (cache dropped on pickle).
 - **02-01:** `code/speed_check.py` oracle/benchmark harness (encode replay oracle, cache probe, train-vs-full-recount probe).
@@ -31,17 +32,21 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## NEXT ACTION
 
-**Plan Phase 3: Per-Domain Tuning (Tokenizers 1 & 2).** Roadmap success criteria:
+**Claude: review Phase 3 plan, then execute.**
 
-- Sweep vocab size for tok1 (Twitter, `domain_1_train.txt`) and tok2 (news, `domain_2_train.txt`); record the chosen size per domain.
-- A dev-set harness reports **tokens/char efficiency** and **tokens/sec speed** (both CPU-local) across vocab sizes, plus **NER F1** per config, producing a sweep table.
-- Chosen configs sit on the F1/efficiency knee without over-merging across entity boundaries; both tokenizers still pass all Phase 1 gates + the encode equality oracle.
+Review these new draft files first:
 
-**>>> VM/GPU enters here.** Efficiency (tokens/char) and speed (tokens/sec) are CPU-local, but the **NER F1 leg of the sweep needs the Tesla M60 VM** (BiLSTM training is impractical on CPU at sweep scale). When Phase 3 reaches F1 scoring, hand the user a self-contained VM command (exact tokenizer pkl + `train_ner_model.py` args + what to capture); results come back via this file / git. Keep all CPU gates green first.
+- `.planning/phases/03-per-domain-tuning/03-CONTEXT.md`
+- `.planning/phases/03-per-domain-tuning/03-01-PLAN.md`
+- `.planning/phases/03-per-domain-tuning/03-02-PLAN.md`
+- `.planning/phases/03-per-domain-tuning/03-03-PLAN.md`
 
-If Claude is on shift: `/gsd-plan-phase 3`. If Codex is on shift: read `.planning/ROADMAP.md` Phase 3 + `.planning/REQUIREMENTS.md` (TUNE-01..04) and propose the sweep harness design before coding (don't invent a VM run locally).
+Items deliberately marked for confirmation in `03-CONTEXT.md`:
 
-Read before working: `.planning/ROADMAP.md` (Phase 3), `.planning/REQUIREMENTS.md` (TUNE-01..04, EVAL-03), `code/bpe_tokenizer.py`, `code/speed_check.py`, `code/test_tokenizer.py` (efficiency/speed harness to extend), `code/train_ner_model.py` (NER contract).
+- Vocab grid `[4000, 8000, 16000]`.
+- VM runtime assumption: <=45 minutes per candidate run, <=4.5 hours for six runs plus overhead.
+- Selection knee rule: smallest vocab within 0.02 absolute F1 of best, then lower tokens/char, then higher tokens/sec.
+- Whether to update `train_commands.txt` during Phase 3 or defer final command freeze to Phase 5.
 
 ## Hard rules
 
