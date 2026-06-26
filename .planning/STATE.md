@@ -5,7 +5,7 @@ milestone_name: milestone
 current_phase: 4
 current_phase_name: Tokenizer 3 Hidden-Domain Generalization
 status: ready_to_plan
-stopped_at: Phase 3 complete (03-03 closed); next is planning Phase 4
+stopped_at: Phase 4 context gathered; next is planning Phase 4
 last_updated: "2026-06-26T00:00:00.000Z"
 last_activity: 2026-06-26
 last_activity_desc: Closed 03-03 — tok1 vocab 8000 and tok2 vocab 16000 selected and staged
@@ -107,5 +107,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-06-26
-Stopped at: Phase 3 complete (03-03 closed); next is planning Phase 4
-Resume file: HANDOFF.md (NEXT ACTION = plan Phase 4)
+Stopped at: Phase 4 context gathered; next is planning Phase 4
+Resume file: .planning/phases/04-tokenizer-3-hidden-domain-generalization/04-CONTEXT.md
