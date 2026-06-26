@@ -1,0 +1,13 @@
+tokenizer_index,vocab_size,tokenizer_path,eval_split,tokens_per_char,tokens_per_second,encode_seconds,dev_chars,dev_tokens,reconstruction_rate,unk_count,bigram_token_count,trigram_token_count,oov_stress_cases_passed,oov_stress_cases_total
+3,4000,tuning\tokenizers\tokenizer_3_vocab4000.pkl,domain_1_dev,0.32938984,198673.5299,0.041755300001,11747463,3869495,1.000000,0,1,0,15,15
+3,4000,tuning\tokenizers\tokenizer_3_vocab4000.pkl,domain_2_dev,0.31745181,116678.8599,0.014805400002,3610485,1146155,1.000000,0,1,0,15,15
+3,4000,tuning\tokenizers\tokenizer_3_vocab4000.pkl,combined_visible_dev,0.32658334,80160799.4647,0.062229200001,15357948,5015650,1.000000,0,1,0,15,15
+3,4000,tuning\tokenizers\tokenizer_3_vocab4000.pkl,stress_oov,0.82124352,117843877.2760,0.000003600002,772,634,1.000000,0,1,0,15,15
+3,8000,tuning\tokenizers\tokenizer_3_vocab8000.pkl,domain_1_dev,0.29356245,149516.1204,0.046203700000,11747463,3448614,1.000000,0,1,0,15,15
+3,8000,tuning\tokenizers\tokenizer_3_vocab8000.pkl,domain_2_dev,0.26928626,90613.6338,0.017997500003,3610485,972254,1.000000,0,1,0,15,15
+3,8000,tuning\tokenizers\tokenizer_3_vocab8000.pkl,combined_visible_dev,0.28785538,71570008.9237,0.065649100001,15357948,4420868,1.000000,0,1,0,15,15
+3,8000,tuning\tokenizers\tokenizer_3_vocab8000.pkl,stress_oov,0.78238342,117054263.5519,0.000003700003,772,604,1.000000,0,1,0,15,15
+3,16000,tuning\tokenizers\tokenizer_3_vocab16000.pkl,domain_1_dev,0.26769116,129296.9017,0.041450099998,11747463,3144692,1.000000,0,1,0,15,15
+3,16000,tuning\tokenizers\tokenizer_3_vocab16000.pkl,domain_2_dev,0.23593589,75166.2744,0.012691100001,3610485,851843,1.000000,0,1,0,15,15
+3,16000,tuning\tokenizers\tokenizer_3_vocab16000.pkl,combined_visible_dev,0.26022585,64504750.2134,0.057556400003,15357948,3996535,1.000000,0,1,0,15,15
+3,16000,tuning\tokenizers\tokenizer_3_vocab16000.pkl,stress_oov,0.76165803,93929717.7806,0.000004800000,772,588,1.000000,0,1,0,15,15

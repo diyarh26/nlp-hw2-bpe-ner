@@ -29,8 +29,12 @@ Deterministic and byte-identical across runs (see output_sha256 in
 tuning/results/tok3_mix_manifest.json). The ~45MB mix is a regenerable,
 gitignored artifact under data/.
 py -m uv run python code/make_tok3_mix.py --seed 42 --domain1 data/domain_1_train.txt --domain2 data/domain_2_train.txt --output data/tok3_mix_d1sample_d2all_seed42.txt --manifest tuning/results/tok3_mix_manifest.json
-(Candidate generation, CPU/VM evidence, selection, and the final staged tok3
-generator command are added in Phase 4 steps 04-02..04-04.)
+Tok3 candidate generation (04-02) - unedited generator on the mix, vocab sweep:
+py -m uv run python generate_tokenizers.py --vocab_size 4000 --seed 42 --output_dir tuning/_tok3_gen/4000 --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
+py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir tuning/_tok3_gen/8000 --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
+py -m uv run python generate_tokenizers.py --vocab_size 16000 --seed 42 --output_dir tuning/_tok3_gen/16000 --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
+(then copy each tuning/_tok3_gen/{V}/tokenizer_3.pkl -> tuning/tokenizers/tokenizer_3_vocab{V}.pkl)
+The final SELECTED tok3 vocab + its staged generator command are recorded in step 04-04.
 
 Training method (Phase 2): the uncapped weighted word-chunk BPE trainer with
 incremental local pair-count deltas and an inverted pair->chunks index. No
