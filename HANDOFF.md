@@ -20,7 +20,7 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 - **Phase:** 2 of 6 - Fast Encode + Training Efficiency
 - **Phase status:** In progress - `02-01` and `02-02` complete; `02-03` Task 1 committed; `02-03` Task 2 is WIP/blocked on full generation speed.
 - **Code state:** `code/bpe_tokenizer.py` now has cached encode plus a weighted incremental trainer. `TRAIN_TEXT_LIMIT` has been removed. The current trainer passes local small-fixture oracle checks but is still too slow for full domain-1 vocab-8000 generation.
-- **Validation state:** `py -m uv run python code\speed_check.py --only all` and `py -m uv run python code\align_check.py` passed after commit `5d4945e`. Full `generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers` has NOT completed; `trained_tokenizers/` is currently empty.
+- **Validation state:** `py -m uv run python code\speed_check.py --only all` and `py -m uv run python code\align_check.py` pass with the current uncommitted chunk-training WIP. Full generation has NOT completed; `trained_tokenizers/` is currently empty.
 
 ## WIP: 02-03 Task 2 Blocked
 
@@ -48,6 +48,37 @@ Quick diagnostics:
   - `_push_pair_heap`: 10.282s
 
 Interpretation: weighted unique texts barely reduce domain 1 because almost every line is unique. The current indexed trainer avoids full global recounts, but it still performs too much heap churn and repeated full sequence pair recounting for impacted sequences. Do not reintroduce a training-data cap as the normal path; optimize the incremental data structures instead.
+
+## WIP: Chunk-Level Training Attempt
+
+Uncommitted files:
+
+- `code/bpe_tokenizer.py`
+- `code/speed_check.py`
+
+Implemented exactly the requested chunk-level training attempt:
+
+- Added `_text_to_chunks(text)` so training chunks tile `_text_to_train_symbols(text)` and a new chunk starts at each space marker.
+- Replaced whole-line `_weighted_sequences` with `_weighted_chunk_sequences`, counting identical chunks across all texts.
+- Added `FORCED_BIGRAM_SAMPLE_LINES = 4000` and `_forced_cross_word_bigram_pair(texts)` so chunk-only training can still satisfy the cross-word bigram gate.
+- Updated `speed_check.py`'s `train_full_recount_oracle` to train over chunks and use the same forced cross-word bigram helper.
+- Did not change encode/decode/cache/slow_replay_encode.
+
+Checks that passed with this WIP:
+
+```powershell
+py -m uv run python code\speed_check.py --only train
+py -m uv run python code\speed_check.py --only all
+py -m uv run python code\align_check.py
+```
+
+Feasibility checkpoint still failed:
+
+```powershell
+py -m uv run python generate_tokenizers.py --vocab_size 1000 --seed 42 --output_dir trained_tokenizers
+```
+
+Result: timed out after 5 minutes (`timeout_ms=300000`) before producing `tokenizer_1.pkl`; no tokenizer files were written. The process tree survived the timeout and was manually stopped. This means chunk dedup alone is still not enough. Next optimization should reduce per-merge update cost further, likely by local neighbor-pair updates or a more compact word-type representation; do not add a normal training cap.
 
 ## What was just done
 
