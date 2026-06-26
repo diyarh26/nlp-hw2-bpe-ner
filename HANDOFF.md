@@ -16,196 +16,53 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-26 (after commit `5d4945e`; plus this HANDOFF commit)
-- **Phase:** 2 of 6 - Fast Encode + Training Efficiency
-- **Phase status:** In progress - `02-01` and `02-02` complete; `02-03` Task 1 committed; `02-03` Task 2 is WIP/blocked on full generation speed.
-- **Code state:** `code/bpe_tokenizer.py` now has cached encode plus a weighted incremental trainer. `TRAIN_TEXT_LIMIT` has been removed. The current trainer passes local small-fixture oracle checks but is still too slow for full domain-1 vocab-8000 generation.
-- **Validation state:** `py -m uv run python code\speed_check.py --only all` and `py -m uv run python code\align_check.py` pass with the current uncommitted chunk-training WIP. Full generation has NOT completed; `trained_tokenizers/` is currently empty.
+- **Last updated by:** Claude - 2026-06-26 (after 02-03 close-out)
+- **Phase:** 3 of 6 - Per-Domain Tuning (Tokenizers 1 & 2)
+- **Phase status:** **Phase 2 COMPLETE** (02-01, 02-02, 02-03 all closed). Phase 3 is **not yet planned**.
+- **Code state:** `code/bpe_tokenizer.py` = cached encode + **uncapped** full-corpus trainer. `train()` -> `_train_merges()`: integer-symbol incremental merge loop with local pair-count deltas, a lazy max-heap, and a superset `pair->chunks` inverted index. Byte-identical merges to the full-recount oracle. No `TRAIN_TEXT_LIMIT`.
+- **Validation state:** `speed_check.py --only all` PASS (oracle + cache + train==full-recount), `align_check.py` PASS (VP1-4,6). Full `generate_tokenizers.py --vocab_size 8000 --seed 42` completes in ~4.5 min; all 3 pkls load; `check_submission.py HW2_214034621.zip` exits 0 with no `[ERROR]`; tokenizers byte-reproducible across double-runs; forbidden-file hashes intact. `trained_tokenizers/` and `HW2_214034621.zip` are ignored local artifacts (rebuild with the commands below).
 
-## WIP: 02-03 Task 2 Blocked
+## What was just done (most recent first)
 
-Attempted the required full generation on 2026-06-26:
-
-```powershell
-py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
-```
-
-Result: timed out after 30 minutes. No `trained_tokenizers/tokenizer_1.pkl` was written, so it was still in tokenizer 1 / domain 1 training. The process tree survived the timeout and was manually stopped. `trained_tokenizers/` is empty.
-
-Quick diagnostics:
-
-- `domain_1_train.txt`: 1,280,508 lines, 1,266,678 unique lines, 95,082,468 chars, average length 74.25.
-- `domain_2_train.txt`: 319,707 lines, 316,459 unique lines, 29,268,720 chars, average length 91.55.
-- A bounded full-domain `domain_1` run at `vocab_size=1000` also timed out after about 3 minutes before producing output.
-- A 20k-line sampled cProfile at `vocab_size=1000` also timed out after about 3 minutes.
-- A 2k-line sampled cProfile at `vocab_size=700` completed in 51.776 seconds for 324 merges. Top cumulative hotspots:
-  - `_apply_indexed_merge`: 35.070s
-  - `_remove_sequence_pairs`: 17.272s
-  - `_best_indexed_pair`: 16.171s
-  - `_add_sequence_pairs`: 15.341s
-  - `_sequence_pair_counts`: 14.390s
-  - `_heapq.heappop`: 13.304s
-  - `_push_pair_heap`: 10.282s
-
-Interpretation: weighted unique texts barely reduce domain 1 because almost every line is unique. The current indexed trainer avoids full global recounts, but it still performs too much heap churn and repeated full sequence pair recounting for impacted sequences. Do not reintroduce a training-data cap as the normal path; optimize the incremental data structures instead.
-
-## WIP: Chunk-Level Training Attempt
-
-Uncommitted files:
-
-- `code/bpe_tokenizer.py`
-- `code/speed_check.py`
-
-Implemented exactly the requested chunk-level training attempt:
-
-- Added `_text_to_chunks(text)` so training chunks tile `_text_to_train_symbols(text)` and a new chunk starts at each space marker.
-- Replaced whole-line `_weighted_sequences` with `_weighted_chunk_sequences`, counting identical chunks across all texts.
-- Added `FORCED_BIGRAM_SAMPLE_LINES = 4000` and `_forced_cross_word_bigram_pair(texts)` so chunk-only training can still satisfy the cross-word bigram gate.
-- Updated `speed_check.py`'s `train_full_recount_oracle` to train over chunks and use the same forced cross-word bigram helper.
-- Did not change encode/decode/cache/slow_replay_encode.
-
-Checks that passed with this WIP:
-
-```powershell
-py -m uv run python code\speed_check.py --only train
-py -m uv run python code\speed_check.py --only all
-py -m uv run python code\align_check.py
-```
-
-Feasibility checkpoint still failed:
-
-```powershell
-py -m uv run python generate_tokenizers.py --vocab_size 1000 --seed 42 --output_dir trained_tokenizers
-```
-
-Result: timed out after 5 minutes (`timeout_ms=300000`) before producing `tokenizer_1.pkl`; no tokenizer files were written. The process tree survived the timeout and was manually stopped. This means chunk dedup alone is still not enough. Next optimization should reduce per-merge update cost further, likely by local neighbor-pair updates or a more compact word-type representation; do not add a normal training cap.
-
-## What was just done
-
-Executed and closed Phase 1 plans `01-03` and `01-04` after the earlier `01-01` / `01-02` work.
-
-`01-01`:
-
-- Extracted `code_env_example.zip` selectively, excluding `HW2_123456789.zip` and `code/__pycache__/`.
-- Extracted `data (3).zip` to ignored `data/`.
-- Added `.gitignore` for local env/data/training artifacts and assignment source files.
-- Recorded `.planning/phases/01-gates-first-submittable-tokenizer/forbidden_files.sha256` for:
-  - `code/base_tokenizer.py`
-  - `code/train_ner_model.py`
-  - `generate_tokenizers.py`
-  - `check_submission.py`
-- Installed `uv` with `py -m pip install --user uv`, then ran `py -m uv sync`.
-- Verified imports under `uv run`: `numpy 2.4.6`, `regex 2026.5.9`, `torch 2.12.0+cu126`, `tqdm 4.68.1`.
-- Added `code/align_check.py`, covering VP-1, VP-2, VP-3, VP-4, and VP-6.
-- Created `.planning/phases/01-gates-first-submittable-tokenizer/01-01-SUMMARY.md`.
-- Updated `.planning/STATE.md` and `.planning/ROADMAP.md`.
-
-`01-02`:
-
-- Implemented `BPETokenizer.train()` in `code/bpe_tokenizer.py`:
-  - deterministic char-up BPE
-  - sorted base vocabulary
-  - mergeable `▁` space marker
-  - one-internal-space merge cap
-  - forced legal cross-word bigram fallback
-  - `TRAIN_TEXT_LIMIT = 5000`
-- Implemented `BPETokenizer.encode()` with private-use byte-token fallback so `[UNK]` id 1 is never emitted.
-- Implemented `BPETokenizer.decode()` with exact reconstruction for normal chars, spaces, and fallback UTF-8 bytes.
-- Verified:
-  - `py -m uv run python code/align_check.py --only vp1,vp2,vp4,vp6` passes.
-  - `py -m uv run python code/align_check.py` also passes, including VP-3.
-  - All 256 byte fallback tokens are present after training.
-  - Forbidden-file hashes still match baseline.
-- Created `.planning/phases/01-gates-first-submittable-tokenizer/01-02-SUMMARY.md`.
-- Updated `.planning/STATE.md`, `.planning/ROADMAP.md`, and `.planning/REQUIREMENTS.md`.
-
-`01-03`:
-
-- Added explicit `BPETokenizer.__getstate__()` / `__setstate__()` and runtime helper rebuilding.
-- Stored the regex pattern as a primitive string and excluded runtime cache/compiled objects from pickle state.
-- Fixed forced-bigram fallback to preserve the requested `vocab_size` cap.
-- Proved all three generated tokenizers are byte-reproducible across repeated unedited `generate_tokenizers.py --vocab_size 600` runs.
-- Created `.planning/phases/01-gates-first-submittable-tokenizer/01-03-SUMMARY.md`.
-
-`01-04`:
-
-- Reduced `TRAIN_TEXT_LIMIT` to 1000 so Phase-1 `--vocab_size 8000` generation completes locally.
-- Generated all three `trained_tokenizers/tokenizer_{1,2,3}.pkl` through the unedited `generate_tokenizers.py` default mapping.
-- Recorded the generator command and default mapping in `train_commands.txt`.
-- Ran the full unedited local CPU NER pipeline on domain 1 with tokenizer 1; best dev F1 was `0.4218`.
-- Added `code/build_submission.py`, which writes a minimal valid placeholder `report_214034621.pdf` and builds the exact required zip layout.
-- Built `HW2_214034621.zip`; checker exited 0 and produced no `[ERROR]` with `PYTHONIOENCODING=utf-8`.
-- Rechecked forbidden-file hashes against `.planning/phases/01-gates-first-submittable-tokenizer/forbidden_files.sha256`.
-- Created `.planning/phases/01-gates-first-submittable-tokenizer/01-04-SUMMARY.md`.
-- Updated `.planning/ROADMAP.md`, `.planning/STATE.md`, and `.planning/REQUIREMENTS.md` so Phase 1 is complete and Phase 2 is next.
-
-Recent commits added by Codex:
-
-- `e57313e` - `fix(01-03): harden tokenizer serialization`
-- `3bd3723` - `docs(01-03): complete serialization reproducibility plan`
-- `d441028` - `fix(01-04): generate phase-one tokenizers feasibly`
-- `dcc6572` - `chore(01-04): ignore local NER model outputs`
-- `4549625` - `feat(01-04): build fallback submission zip`
-- `6e3656a` - `docs(01-04): complete fallback submission plan`
+- **02-03 (Phase 2 closed):** the weighted word-chunk trainer was correct but still timed out on full domain-1 generation (1.21 M unique chunks; 73% singletons; heap churn + whole-chunk pair recounts). Claude rewrote the merge bookkeeping as `_train_merges` (int symbols, local-neighbour deltas, disciplined lazy heap, superset inverted index) producing identical merges. Domain-1 vocab-8000: ~124 s; full 3-tokenizer generation: ~273 s. Regenerated all 3 pkls, rebuilt the zip (checker-clean), verified byte-reproducibility and forbidden-file integrity. Removed the old `_build_pair_index`/`_apply_indexed_merge`/`_*_sequence_pairs`/`_best_indexed_pair`/`_push_pair_heap` helpers. `train_commands.txt` annotated with the uncapped trainer method.
+- **02-02:** cached public `encode` + `_encode_uncached` + `_ids_from_symbols`; cache speed win proven; pickle-safe (cache dropped on pickle).
+- **02-01:** `code/speed_check.py` oracle/benchmark harness (encode replay oracle, cache probe, train-vs-full-recount probe).
+- **Phase 1 (complete, 01-01..01-04):** scaffold extracted; `uv` env; `align_check.py` (VP1-4,6); char-up BPE with `▁` marker, capped bigram, byte fallback, length-faithful decode; pickle hardening; first submittable zip; local CPU domain-1 NER best F1 was **0.4218** (with the old capped tokenizer).
 
 ## NEXT ACTION
 
-Continue **Phase 2 / 02-03 Task 2** by optimizing the current weighted incremental trainer so full generation completes without reintroducing a normal training-data cap.
+**Plan Phase 3: Per-Domain Tuning (Tokenizers 1 & 2).** Roadmap success criteria:
 
-Current likely optimization targets:
+- Sweep vocab size for tok1 (Twitter, `domain_1_train.txt`) and tok2 (news, `domain_2_train.txt`); record the chosen size per domain.
+- A dev-set harness reports **tokens/char efficiency** and **tokens/sec speed** (both CPU-local) across vocab sizes, plus **NER F1** per config, producing a sweep table.
+- Chosen configs sit on the F1/efficiency knee without over-merging across entity boundaries; both tokenizers still pass all Phase 1 gates + the encode equality oracle.
 
-- Reduce lazy heap churn in `_best_indexed_pair` / `_push_pair_heap`.
-- Avoid full `_sequence_pair_counts` recounts for every impacted sequence on every merge; update local neighbor pairs around each replacement instead.
-- Consider representing each sequence with mutable token ids/linked neighbors or per-sequence pair positions so impacted updates are local.
-- Keep deterministic tie-breaking and Phase 1 gates intact.
+**>>> VM/GPU enters here.** Efficiency (tokens/char) and speed (tokens/sec) are CPU-local, but the **NER F1 leg of the sweep needs the Tesla M60 VM** (BiLSTM training is impractical on CPU at sweep scale). When Phase 3 reaches F1 scoring, hand the user a self-contained VM command (exact tokenizer pkl + `train_ner_model.py` args + what to capture); results come back via this file / git. Keep all CPU gates green first.
 
-After optimizing, rerun:
+If Claude is on shift: `/gsd-plan-phase 3`. If Codex is on shift: read `.planning/ROADMAP.md` Phase 3 + `.planning/REQUIREMENTS.md` (TUNE-01..04) and propose the sweep harness design before coding (don't invent a VM run locally).
 
-```powershell
-py -m uv run python code\speed_check.py --only all
-py -m uv run python code\align_check.py
-py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
-py -m uv run python code\build_submission.py
-$env:PYTHONIOENCODING='utf-8'; py -m uv run python check_submission.py HW2_214034621.zip
-```
-
-Then close `.planning/phases/02-fast-encode-training-efficiency/02-03-PLAN.md` only if all checks pass.
-
-Read before editing:
-
-- `.planning/phases/02-fast-encode-training-efficiency/02-03-PLAN.md`
-- `.planning/phases/02-fast-encode-training-efficiency/02-RESEARCH.md`
-- `.planning/phases/02-fast-encode-training-efficiency/02-VALIDATION.md`
-- `code/bpe_tokenizer.py`
-- `code/speed_check.py`
-- `generate_tokenizers.py`
-- `code/build_submission.py`
-- `check_submission.py`
+Read before working: `.planning/ROADMAP.md` (Phase 3), `.planning/REQUIREMENTS.md` (TUNE-01..04, EVAL-03), `code/bpe_tokenizer.py`, `code/speed_check.py`, `code/test_tokenizer.py` (efficiency/speed harness to extend), `code/train_ner_model.py` (NER contract).
 
 ## Hard rules
 
-- **Never edit** the four forbidden files after extraction:
-  - `code/base_tokenizer.py`
-  - `code/train_ner_model.py`
-  - `generate_tokenizers.py`
-  - `check_submission.py`
-- Use only the locked stack: `numpy`, `regex`, `torch`, `tqdm`. No new project dependencies.
-- Use `import regex`, not stdlib `re`, in tokenizer code if regex is needed.
-- `decode` must be pure and length-preserving: ids -> token strings -> join -> replace space marker with real spaces. No strip/lower/normalization.
-- Guarantee at least one cross-word bigram and no token spanning 3+ words.
-- `encode` must never emit `[UNK]` id 1.
-- Keep tokenizer pickle-safe: no lambdas/closures/local classes/defaultdict(lambda) in persisted state; preserve the explicit `__getstate__`/`__setstate__` contract.
-- No GPU run until the Phase 5 VM evaluation plan. Protect the 10h Tesla M60 budget.
+- **Never edit** the four forbidden files (kept byte-identical; hashes in `.planning/phases/01-gates-first-submittable-tokenizer/forbidden_files.sha256`):
+  - `code/base_tokenizer.py`, `code/train_ner_model.py`, `generate_tokenizers.py`, `check_submission.py`
+- Locked stack only: `numpy`, `regex` (`import regex`, not `re`), `torch`, `tqdm`. No new dependencies.
+- `decode` stays pure/length-preserving: ids -> token strings -> join -> replace `▁` with real spaces. No strip/lower/normalization.
+- Guarantee >=1 cross-word bigram and no token spanning 3+ words. `encode` never emits `[UNK]` id 1.
+- Pickle-safe: no lambdas/closures/local classes/`defaultdict(lambda)` in persisted state; keep the explicit `__getstate__`/`__setstate__`.
+- If you change `train`/`encode`, keep `speed_check.py --only all` (oracle + train==full-recount) and `align_check.py` green, and keep training deterministic (byte-reproducible).
+- GPU only on the Tesla M60 VM (Phase 3 F1 sweep onward). Protect the 10h budget; CPU gates green first.
 
 ## Open questions / caveats
 
-- **Git remote:** none configured. Local handoff works in this folder; remote only matters for VM relay.
-- **GSD helper issue:** `node $HOME/.codex/gsd-core/bin/gsd-tools.cjs ...` currently fails because `../../../package.json` is missing from the local GSD install. Codex manually updated GSD metadata.
-- **uv PATH:** `uv` is installed in the user Python scripts directory. In PowerShell, either prepend `$env:APPDATA\Python\Python311\Scripts` to `PATH`, or run `py -m uv ...`.
-- **Checker encoding:** On Windows, set `$env:PYTHONIOENCODING='utf-8'` before `check_submission.py`; otherwise printing the space marker may fail even though the submission is valid.
-- **Ignored deliverables:** `trained_tokenizers/`, `models/`, and `HW2_214034621.zip` are ignored local artifacts. Rebuild the zip with `py -m uv run python code/build_submission.py` if these artifacts are missing.
-- **Current trainer note:** `TRAIN_TEXT_LIMIT` is gone. Full generation is blocked by trainer performance, not by correctness gates. Do not add a normal cap to make the run pass.
-- **Line endings:** Git reports LF-to-CRLF warnings on Windows. No functional issue observed.
+- **Git remote:** none configured. Local relay works in this same folder. A remote is only needed if Codex runs on the VM (cross-machine); the ~95MB data zip stays gitignored.
+- **Trainer note:** `TRAIN_TEXT_LIMIT` is gone; full generation is feasible (~4.5 min for all 3). If Phase 3 changes the trainer, re-confirm `speed_check.py --only train` (oracle equality) and a small double-run reproducibility check.
+- **uv PATH:** run Python via `py -m uv run python ...`.
+- **Checker encoding:** on Windows set `$env:PYTHONIOENCODING='utf-8'` before `check_submission.py` (otherwise printing `▁` can fail even when the submission is valid).
+- **Ignored deliverables:** `trained_tokenizers/`, `models/`, `HW2_214034621.zip` are gitignored. Rebuild: `py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers` then `py -m uv run python code/build_submission.py`.
+- **GSD helper:** local `gsd-tools.cjs` may fail (missing package metadata); state/roadmap updates can be done by hand.
+- **Line endings:** Git reports LF->CRLF warnings on Windows; no functional impact.
 
 ## Key files map
 
@@ -213,20 +70,17 @@ Read before editing:
 - Rules / constraints: `.claude/CLAUDE.md`
 - Spec & roadmap: `.planning/PROJECT.md`, `.planning/ROADMAP.md`, `.planning/REQUIREMENTS.md`, `.planning/STATE.md`
 - Research: `.planning/research/{STACK,ARCHITECTURE,PITFALLS,FEATURES,SUMMARY}.md`
-- Phase 1 artifacts: `.planning/phases/01-gates-first-submittable-tokenizer/`
-- Red harness: `code/align_check.py`
-- Tokenizer to implement next: `code/bpe_tokenizer.py`
+- Phase 1 / Phase 2 artifacts: `.planning/phases/01-*/`, `.planning/phases/02-*/`
+- Tokenizer: `code/bpe_tokenizer.py`; gates: `code/align_check.py`, `code/speed_check.py`; harness to extend: `code/test_tokenizer.py`
 
 ## Continuation prompts
 
 ### To Codex
-
 ```text
-Continue this project from HANDOFF.md. Do the NEXT ACTION exactly. Never edit the four forbidden files. Commit each completed task and update HANDOFF.md last.
+Continue this project from HANDOFF.md (a from-scratch BPE tokenizer for NER, NOT a retrieval/ranking system). Do the NEXT ACTION exactly. Never edit the four forbidden files. Keep speed_check.py --only all and align_check.py green. Do NOT invent a local GPU/NER run -- the VM F1 work is dispatched separately. Commit each completed task and update HANDOFF.md last. If unsure, say so instead of guessing.
 ```
 
 ### To Claude
-
 ```text
 Read HANDOFF.md and continue from the NEXT ACTION.
 ```
