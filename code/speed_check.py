@@ -156,7 +156,7 @@ def uncached_encode(tokenizer: BPETokenizer, text: str) -> List[int]:
 def check_cache() -> None:
     samples = collect_samples()
     tokenizer = build_probe_tokenizer(samples)
-    repeated = (samples[:12] + ["repeat repeat repeat in the world"]) * 25
+    repeated = (samples[:12] + ["repeat repeat repeat in the world"]) * 200
 
     tokenizer._encode_cache.clear()
     start = time.perf_counter()
@@ -166,10 +166,16 @@ def check_cache() -> None:
     tokenizer._encode_cache.clear()
     start = time.perf_counter()
     public_outputs = [tokenizer.encode(text) for text in repeated]
-    public_seconds = time.perf_counter() - start
+    cached_seconds = time.perf_counter() - start
+    cache_entries = len(getattr(tokenizer, "_encode_cache", {}))
 
     if public_outputs != uncached_outputs:
         raise AssertionError("public encode output differs from uncached/oracle output")
+    if cached_seconds >= uncached_seconds:
+        raise AssertionError(
+            f"cached encode was not faster: cached={cached_seconds:.6f}, "
+            f"uncached={uncached_seconds:.6f}"
+        )
 
     tokenizer._encode_cache["sentinel"] = [1]
     loaded = pickle.loads(pickle.dumps(tokenizer))
@@ -177,9 +183,9 @@ def check_cache() -> None:
         raise AssertionError("_encode_cache persisted across pickle round-trip")
 
     print(f"uncached_seconds={uncached_seconds:.6f}")
-    print(f"public_seconds={public_seconds:.6f}")
-    print(f"cache_entries={len(getattr(tokenizer, '_encode_cache', {}))}")
-    print("CACHE: PASS - output equality and pickle cache drop verified")
+    print(f"cached_seconds={cached_seconds:.6f}")
+    print(f"cache_entries={cache_entries}")
+    print("CACHE: PASS - cached encode faster, output equality, pickle cache drop verified")
 
 
 def check_train() -> None:

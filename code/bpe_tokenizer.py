@@ -99,8 +99,21 @@ class BPETokenizer(BaseTokenizer):
 
     def encode(self, text: str) -> List[int]:
         """Convert a text string into token IDs, never emitting [UNK]."""
+        cached = self._encode_cache.get(text)
+        if cached is not None:
+            return list(cached)
+        ids = self._encode_uncached(text)
+        self._encode_cache[text] = list(ids)
+        return list(ids)
+
+    def _encode_uncached(self, text: str) -> List[int]:
+        """Encode without consulting or populating the runtime cache."""
         symbols = self._text_to_encode_symbols(text)
         symbols = self._apply_ranked_merges(symbols)
+        return self._ids_from_symbols(symbols)
+
+    def _ids_from_symbols(self, symbols: Iterable[str]) -> List[int]:
+        """Map final symbols to token IDs with UTF-8 byte fallback."""
         ids: List[int] = []
         for symbol in symbols:
             token_id = self.token_to_id.get(symbol)
