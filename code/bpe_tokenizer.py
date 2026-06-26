@@ -6,8 +6,9 @@ naive merge loops with faster indexed structures while keeping this behavior as
 the oracle.
 """
 
-from collections import Counter
-from typing import Dict, Iterable, List, Sequence, Tuple
+from collections import Counter, defaultdict
+import heapq
+from typing import DefaultDict, Dict, Iterable, List, Sequence, Set, Tuple
 
 import regex
 
@@ -16,7 +17,6 @@ from base_tokenizer import BaseTokenizer
 
 SPACE_TOKEN = "▁"
 BYTE_PREFIX = "\ue000"
-TRAIN_TEXT_LIMIT = 1000
 PRETOKEN_PATTERN = r"\X"
 
 
@@ -64,10 +64,9 @@ class BPETokenizer(BaseTokenizer):
         self._init_runtime_state()
 
     def train(self, texts: List[str]) -> None:
-        """Train a deterministic char-up BPE tokenizer on a capped text slice."""
+        """Train a deterministic char-up BPE tokenizer on weighted unique texts."""
         self._reset_vocab()
-        limited_texts = list(texts[:TRAIN_TEXT_LIMIT])
-        sequences = [self._text_to_train_symbols(text) for text in limited_texts if text]
+        sequences, weights = self._weighted_sequences(texts)
 
         base_tokens = set(self.byte_tokens.values())
         base_tokens.add(self.space_token)
@@ -76,23 +75,16 @@ class BPETokenizer(BaseTokenizer):
         for token in sorted(base_tokens):
             self._add_token(token)
 
+        pair_counts, pair_to_sequences, pair_heap = self._build_pair_index(sequences, weights)
         while len(self.token_to_id) < self.vocab_size:
             if len(self.token_to_id) == self.vocab_size - 1 and not self._has_bigram_token():
                 self._force_bigram(sequences)
                 break
-            pair_counts = self._count_pairs(sequences)
-            candidates = [
-                (pair, count)
-                for pair, count in pair_counts.items()
-                if count > 0
-                and pair not in self.merge_ranks
-                and self._legal_merge(pair[0], pair[1])
-            ]
-            if not candidates:
+            pair = self._best_indexed_pair(pair_counts, pair_heap)
+            if pair is None:
                 break
-            pair, _count = min(candidates, key=_pair_sort_key)
             self._record_merge(pair)
-            sequences = self._apply_pair_to_sequences(sequences, pair)
+            self._apply_indexed_merge(sequences, weights, pair, pair_counts, pair_to_sequences, pair_heap)
 
         if len(self.token_to_id) < self.vocab_size and not self._has_bigram_token():
             self._force_bigram(sequences)
@@ -184,6 +176,128 @@ class BPETokenizer(BaseTokenizer):
                 if self._legal_merge(pair[0], pair[1]):
                     counts[pair] += 1
         return counts
+
+    def _weighted_sequences(self, texts: Sequence[str]) -> Tuple[List[List[str]], List[int]]:
+        text_counts = Counter(text for text in texts if text)
+        sequences: List[List[str]] = []
+        weights: List[int] = []
+        for text in sorted(text_counts):
+            sequences.append(self._text_to_train_symbols(text))
+            weights.append(text_counts[text])
+        return sequences, weights
+
+    def _build_pair_index(
+        self, sequences: Sequence[Sequence[str]], weights: Sequence[int]
+    ) -> Tuple[Counter, DefaultDict[Tuple[str, str], Set[int]], List[Tuple[int, str, str, Tuple[str, str]]]]:
+        pair_counts: Counter = Counter()
+        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]] = defaultdict(set)
+        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]] = []
+        for sequence_id, sequence in enumerate(sequences):
+            self._add_sequence_pairs(
+                sequence_id,
+                sequence,
+                weights[sequence_id],
+                pair_counts,
+                pair_to_sequences,
+                pair_heap,
+            )
+        return pair_counts, pair_to_sequences, pair_heap
+
+    def _sequence_pair_counts(self, sequence: Sequence[str]) -> Counter:
+        counts: Counter = Counter()
+        for index in range(len(sequence) - 1):
+            pair = (sequence[index], sequence[index + 1])
+            if self._legal_merge(pair[0], pair[1]):
+                counts[pair] += 1
+        return counts
+
+    def _push_pair_heap(
+        self,
+        pair: Tuple[str, str],
+        pair_counts: Counter,
+        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
+    ) -> None:
+        count = pair_counts.get(pair, 0)
+        if count > 0:
+            heapq.heappush(pair_heap, (-count, pair[0], pair[1], pair))
+
+    def _add_sequence_pairs(
+        self,
+        sequence_id: int,
+        sequence: Sequence[str],
+        weight: int,
+        pair_counts: Counter,
+        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]],
+        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
+    ) -> None:
+        for pair, count in self._sequence_pair_counts(sequence).items():
+            pair_counts[pair] += count * weight
+            pair_to_sequences[pair].add(sequence_id)
+            self._push_pair_heap(pair, pair_counts, pair_heap)
+
+    def _remove_sequence_pairs(
+        self,
+        sequence_id: int,
+        sequence: Sequence[str],
+        weight: int,
+        pair_counts: Counter,
+        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]],
+        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
+    ) -> None:
+        for pair, count in self._sequence_pair_counts(sequence).items():
+            pair_counts[pair] -= count * weight
+            if pair_counts[pair] <= 0:
+                pair_counts.pop(pair, None)
+            members = pair_to_sequences.get(pair)
+            if members is not None:
+                members.discard(sequence_id)
+                if not members:
+                    pair_to_sequences.pop(pair, None)
+            self._push_pair_heap(pair, pair_counts, pair_heap)
+
+    def _best_indexed_pair(
+        self, pair_counts: Counter, pair_heap: List[Tuple[int, str, str, Tuple[str, str]]]
+    ) -> Tuple[str, str] | None:
+        while pair_heap:
+            negative_count, _left, _right, pair = heapq.heappop(pair_heap)
+            count = pair_counts.get(pair, 0)
+            if count <= 0 or -negative_count != count:
+                continue
+            if pair in self.merge_ranks or not self._legal_merge(pair[0], pair[1]):
+                continue
+            return pair
+        return None
+
+    def _apply_indexed_merge(
+        self,
+        sequences: List[List[str]],
+        weights: Sequence[int],
+        pair: Tuple[str, str],
+        pair_counts: Counter,
+        pair_to_sequences: DefaultDict[Tuple[str, str], Set[int]],
+        pair_heap: List[Tuple[int, str, str, Tuple[str, str]]],
+    ) -> None:
+        impacted = sorted(pair_to_sequences.get(pair, set()))
+        for sequence_id in impacted:
+            sequence = sequences[sequence_id]
+            self._remove_sequence_pairs(
+                sequence_id,
+                sequence,
+                weights[sequence_id],
+                pair_counts,
+                pair_to_sequences,
+                pair_heap,
+            )
+            merged_sequence = self._apply_pair(sequence, pair)
+            sequences[sequence_id] = merged_sequence
+            self._add_sequence_pairs(
+                sequence_id,
+                merged_sequence,
+                weights[sequence_id],
+                pair_counts,
+                pair_to_sequences,
+                pair_heap,
+            )
 
     def _legal_merge(self, left: str, right: str) -> bool:
         return (left + right).count(self.space_token) <= 1

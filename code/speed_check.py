@@ -114,6 +114,19 @@ def build_probe_tokenizer(samples: List[str] | None = None) -> BPETokenizer:
     return tokenizer
 
 
+def probe_training_lines(samples: List[str]) -> List[str]:
+    training_lines = [
+        "in the house",
+        "in the car",
+        "in the world",
+        "the end",
+        "hello world",
+        "repeat repeat repeat",
+    ] * 40
+    training_lines.extend(samples[:80])
+    return training_lines
+
+
 def ids_from_symbols(tokenizer: BPETokenizer, symbols: Iterable[str]) -> List[int]:
     ids: List[int] = []
     for symbol in symbols:
@@ -130,6 +143,39 @@ def slow_replay_encode(tokenizer: BPETokenizer, text: str) -> List[int]:
     for pair in tokenizer.merges:
         symbols = tokenizer._apply_pair(symbols, pair)
     return ids_from_symbols(tokenizer, symbols)
+
+
+def train_full_recount_oracle(tokenizer: BPETokenizer, texts: List[str]) -> None:
+    tokenizer._reset_vocab()
+    sequences = [tokenizer._text_to_train_symbols(text) for text in texts if text]
+
+    base_tokens = set(tokenizer.byte_tokens.values())
+    base_tokens.add(tokenizer.space_token)
+    for sequence in sequences:
+        base_tokens.update(sequence)
+    for token in sorted(base_tokens):
+        tokenizer._add_token(token)
+
+    while len(tokenizer.token_to_id) < tokenizer.vocab_size:
+        if len(tokenizer.token_to_id) == tokenizer.vocab_size - 1 and not tokenizer._has_bigram_token():
+            tokenizer._force_bigram(sequences)
+            break
+        pair_counts = tokenizer._count_pairs(sequences)
+        candidates = [
+            (pair, count)
+            for pair, count in pair_counts.items()
+            if count > 0
+            and pair not in tokenizer.merge_ranks
+            and tokenizer._legal_merge(pair[0], pair[1])
+        ]
+        if not candidates:
+            break
+        pair, _count = min(candidates, key=lambda item: (-item[1], item[0][0], item[0][1]))
+        tokenizer._record_merge(pair)
+        sequences = tokenizer._apply_pair_to_sequences(sequences, pair)
+
+    if len(tokenizer.token_to_id) < tokenizer.vocab_size and not tokenizer._has_bigram_token():
+        tokenizer._force_bigram(sequences)
 
 
 def check_oracle() -> None:
@@ -190,12 +236,32 @@ def check_cache() -> None:
 
 def check_train() -> None:
     samples = collect_samples()
-    tokenizer = build_probe_tokenizer(samples)
-    if not tokenizer.merges:
+    training_lines = [
+        "in the house",
+        "in the car",
+        "in the world",
+        "the end",
+        "hello world",
+        "repeat repeat repeat",
+    ] * 20
+    training_lines.extend(samples[:10])
+    incremental = BPETokenizer(vocab_size=420)
+    full_recount = BPETokenizer(vocab_size=420)
+    incremental.train(training_lines)
+    train_full_recount_oracle(full_recount, training_lines)
+
+    if incremental.merges != full_recount.merges:
+        raise AssertionError("incremental merges differ from full-recount oracle")
+    if incremental.token_to_id != full_recount.token_to_id:
+        raise AssertionError("incremental vocab differs from full-recount oracle")
+    for text in samples[:25]:
+        if incremental.encode(text) != full_recount.encode(text):
+            raise AssertionError(f"incremental encode differs from oracle for {text!r}")
+    if not incremental.merges:
         raise AssertionError("probe tokenizer learned no merges")
-    if not tokenizer._has_bigram_token():
+    if not incremental._has_bigram_token():
         raise AssertionError("probe tokenizer learned no legal bigram")
-    print(f"TRAIN: PASS - baseline probe learned {len(tokenizer.merges)} merges")
+    print(f"TRAIN: PASS - incremental trainer matched full recount for {len(incremental.merges)} merges")
 
 
 CHECKS: dict[str, Check] = {
