@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 2
 current_phase_name: Fast Encode + Training Efficiency
-status: ready_for_planning
-stopped_at: Completed 01-04-PLAN.md; Phase 1 fallback submission is checker-passing
-last_updated: "2026-06-25T13:32:00.000Z"
+status: planned
+stopped_at: Planned Phase 2; ready to execute 02-01-PLAN.md
+last_updated: "2026-06-25T13:45:00.000Z"
 last_activity: 2026-06-25
-last_activity_desc: Completed Phase 1 fallback submission packaging and checker gate
+last_activity_desc: Planned Phase 2 fast encode and training efficiency work
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 4
+  total_plans: 7
   completed_plans: 4
-  percent: 100
+  percent: 57
 ---
 
 # Project State
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 2 of 6 (Fast Encode + Training Efficiency)
-Plan: TBD in current phase
-Status: Ready for planning - Phase 1 complete
-Last activity: 2026-06-25 - Completed Phase 1 fallback submission packaging and checker gate
+Plan: 0 of 3 in current phase
+Status: Planned - ready for 02-01
+Last activity: 2026-06-25 - Planned Phase 2 fast encode and training efficiency work
 
-Progress: [##########] 100% for Phase 1
+Progress: [######----] 57% overall planned work
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [##########] 100% for Phase 1
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 4 | 4 | 30 min |
+| 2 | 0 | 3 | - |
 
 **Recent Trend:**
 
@@ -71,6 +72,7 @@ Recent decisions affecting current work:
 - [01-02]: `BPETokenizer` now implements deterministic char-up BPE, the `▁` space marker, one-internal-space merge cap, forced bigram fallback, zero-UNK byte fallback, and exact decode reconstruction.
 - [01-03]: `BPETokenizer` now has explicit primitive-only pickle state; all three generated tokenizer pickles were byte-identical across two unedited generator runs at `--vocab_size 600`.
 - [01-04]: Phase-1 fallback tokenizers are generated at `--vocab_size 8000`; local CPU domain-1 NER best F1 was 0.4218; `HW2_214034621.zip` passes `check_submission.py` with no `[ERROR]`.
+- [02-plan]: Phase 2 is split into three plans: oracle/benchmark harness, cached encode rewrite, and weighted incremental trainer plus checker regression.
 
 ### Pending Todos
 
@@ -97,6 +99,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-25T13:32:00Z
-Stopped at: Completed 01-04-PLAN.md; Phase 1 fallback submission ready
-Resume file: Phase 2 planning (`.planning/ROADMAP.md` -> Phase 2)
+Last session: 2026-06-25T13:45:00Z
+Stopped at: Planned Phase 2; ready to execute 02-01-PLAN.md
+Resume file: .planning/phases/02-fast-encode-training-efficiency/02-01-PLAN.md

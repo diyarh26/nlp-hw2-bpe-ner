@@ -63,7 +63,18 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Training uses weighted word-frequency chunks + incremental pair-count deltas with an inverted `pair->chunks` index (no full recount per merge), and trains tokenizer 1 on `domain_1_train.txt` to completion in reasonable wall time without OOM.
   4. All Phase 1 gates still pass after the rewrite (`check_submission.py` clean, fresh-process load OK, byte-reproducible) — the artifact remains submittable.
 
-**Plans**: TBD
+**Plans**: 3 plans
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Wave 1: add encode oracle + benchmark harness before optimizer changes
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-02-PLAN.md — Wave 2: add cached public encode + uncached helper, prove oracle equality and cache speed
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 02-03-PLAN.md — Wave 3: replace capped full-recount training with weighted incremental training, regenerate pkls, rebuild checker-clean zip
 
 ### Phase 3: Per-Domain Tuning (Tokenizers 1 & 2)
 
@@ -130,7 +141,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Gates-First Submittable Tokenizer | 4/4 | Complete | 2026-06-25 |
-| 2. Fast Encode + Training Efficiency | 0/TBD | Not started | - |
+| 2. Fast Encode + Training Efficiency | 0/3 | Planned | - |
 | 3. Per-Domain Tuning (Tokenizers 1 & 2) | 0/TBD | Not started | - |
 | 4. Tokenizer 3 Hidden-Domain Generalization | 0/TBD | Not started | - |
 | 5. VM NER Evaluation & Measurement | 0/TBD | Not started | - |
