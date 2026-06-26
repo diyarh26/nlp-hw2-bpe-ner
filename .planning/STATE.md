@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 4
-current_phase_name: Tokenizer 3 Hidden-Domain Generalization
+current_phase: 5
+current_phase_name: Final Evaluation (VM F1 + competition measurement)
 status: ready_to_plan
-stopped_at: Phase 4 context gathered; next is planning Phase 4
-last_updated: "2026-06-26T00:00:00.000Z"
-last_activity: 2026-06-26
-last_activity_desc: Closed 03-03 — tok1 vocab 8000 and tok2 vocab 16000 selected and staged
+stopped_at: Phase 4 complete (tok3 vocab 8000 staged); next is Phase 5
+last_updated: "2026-06-27T00:00:00.000Z"
+last_activity: 2026-06-27
+last_activity_desc: Closed 04-04 — tok3 vocab 8000 (mix-trained) selected and staged; Phase 4 complete
 progress:
   total_phases: 6
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
-  percent: 50
+  completed_phases: 4
+  total_plans: 14
+  completed_plans: 14
+  percent: 67
 ---
 
 # Project State
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 4 of 6 (Tokenizer 3 Hidden-Domain Generalization) - Phase 3 complete
-Plan: Phase 3 closed (3/3); Phase 4 not yet planned
-Status: Ready to plan Phase 4
-Last activity: 2026-06-26 - Closed 03-03 (tok1 vocab 8000, tok2 vocab 16000 selected and staged)
+Phase: 5 of 6 (Final Evaluation) - Phase 4 complete
+Plan: Phase 4 closed (4/4); tok3 vocab 8000 (mix-trained) staged
+Status: Ready to plan/execute Phase 5 (final VM F1 + competition measurement)
+Last activity: 2026-06-27 - Closed 04-04 (tok3 vocab 8000 selected and staged; all gates green)
 
-Progress: [#####-----] 50% (3 of 6 phases complete; all planned plans done)
+Progress: [######----] 67% (4 of 6 phases complete; all planned plans done)
 
 ## Performance Metrics
 
@@ -80,6 +80,9 @@ Recent decisions affecting current work:
 - [03-01]: Candidate tok1/tok2 pickles were generated only through unedited `generate_tokenizers.py` for vocab sizes 4000, 8000, and 16000; `code/tune_tokenizers.py` measures CPU efficiency/speed without training.
 - [03-02]: VM F1 sweep completed on Tesla M60. Tok1 F1: 4000=0.4237, 8000=0.4352, 16000=0.3692. Tok2 F1: 4000=0.9610, 8000=0.9570, 16000=0.9557.
 - [03-03]: Selected tok1 vocab 8000 (best F1) and tok2 vocab 16000 (within 0.0053 F1 of best while best efficiency/speed); staged measured candidates into `trained_tokenizers/`.
+- [04-01/02]: Tok3 trains on a deterministic balanced mix (all domain-2 + same-count SHA-256 sample of domain-1, exact-line dedup after mixing, 634,359 lines); 3 generator-produced candidates (vocab 4000/8000/16000); CPU/OOV gates all green (0 UNK, recon 1.0, >=1 bigram, 0 trigram, OOV 15/15).
+- [04-03]: Tok3 visible-domain VM F1 decreases with vocab — 4000 d1=0.4450/d2=0.9616, 8000 d1=0.4217/d2=0.9587, 16000 d1=0.3792/d2=0.9585 (larger mix-vocab over-merges).
+- [04-04]: Hidden-generalization score top pick was 4000; user selected vocab **8000** (balanced: ~14% better efficiency than 4000 for ~0.013 mean-F1 cost, medium-vocab range). Staged mix-trained tok3@8000; byte-reproducible vs fresh generator; tok1/tok2 preserved; align/speed/build/check all green. GEN-01/02/03 complete.
 
 ### Pending Todos
 

@@ -1,0 +1,4 @@
+vocab_size,gate_status,gate_reason,mean_visible_f1,worst_domain_f1,f1_domain1,f1_domain2,combined_tokens_per_char,domain_balance_gap,oov_robustness,reconstruction_min,speed_tok_s,score,selected
+4000,pass,ok,0.7033,0.4450,0.4450,0.9616,0.326583,0.528538,1.0000,1.000000,80160799.5,0.7500,true
+8000,pass,ok,0.6902,0.4217,0.4217,0.9587,0.287855,0.561276,1.0000,1.000000,71570008.9,0.6759,false
+16000,pass,ok,0.6688,0.3792,0.3792,0.9585,0.260226,0.611055,1.0000,1.000000,64504750.2,0.4500,false

@@ -43,9 +43,9 @@ Committed scope for the submission. Each maps to a roadmap phase.
 
 ### Tokenizer 3 / Hidden-Domain Generalization (GEN)
 
-- [ ] **GEN-01**: Tokenizer 3 trains on a deliberate mix of domain 1+2 data designed to generalize (balanced — downsample the larger domain — and deduplicated near-duplicate lines).
-- [ ] **GEN-02**: Tokenizer 3 uses a moderate vocab + byte fallback so an unseen domain incurs no UNK and degrades gracefully.
-- [ ] **GEN-03**: A reasoned, evidence-backed evaluation of tokenizer 3's expected hidden-domain behavior is produced for the report.
+- [x] **GEN-01**: Tokenizer 3 trains on a deliberate mix of domain 1+2 data designed to generalize (balanced — downsample the larger domain — and deduplicated near-duplicate lines).
+- [x] **GEN-02**: Tokenizer 3 uses a moderate vocab + byte fallback so an unseen domain incurs no UNK and degrades gracefully.
+- [x] **GEN-03**: A reasoned, evidence-backed evaluation of tokenizer 3's expected hidden-domain behavior is produced for the report.
 
 ### Validation & Evaluation (EVAL)
 
@@ -106,9 +106,9 @@ Which phases cover which requirements. Populated during roadmap creation.
 | TUNE-02 | Phase 3 | Complete in 03-01 |
 | TUNE-03 | Phase 3 | Complete in 03-02 |
 | TUNE-04 | Phase 3 | Complete in 03-03 |
-| GEN-01 | Phase 4 | Pending |
-| GEN-02 | Phase 4 | Pending |
-| GEN-03 | Phase 4 | Pending |
+| GEN-01 | Phase 4 | Complete in 04-01/04-02/04-04 (balanced mix, staged tok3@8000) |
+| GEN-02 | Phase 4 | Complete in 04-02/04-04 (zero-UNK, OOV 15/15, byte fallback) |
+| GEN-03 | Phase 4 | Complete in 04-03/04-04 (VM F1 + tok3_selection.csv evidence) |
 | EVAL-02 | Phase 3 | Complete in 03-03 (tok2 vocab 16000 VM F1 = 0.9557) |
 | EVAL-03 | Phase 5 | Pending |
 | EVAL-04 | Phase 5 | Pending |
