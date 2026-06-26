@@ -70,7 +70,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-02-PLAN.md — Wave 2: add cached public encode + uncached helper, prove oracle equality and cache speed
+- [x] 02-02-PLAN.md — Wave 2: add cached public encode + uncached helper, prove oracle equality and cache speed
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -141,7 +141,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Gates-First Submittable Tokenizer | 4/4 | Complete | 2026-06-25 |
-| 2. Fast Encode + Training Efficiency | 1/3 | In Progress | - |
+| 2. Fast Encode + Training Efficiency | 2/3 | In Progress | - |
 | 3. Per-Domain Tuning (Tokenizers 1 & 2) | 0/TBD | Not started | - |
 | 4. Tokenizer 3 Hidden-Domain Generalization | 0/TBD | Not started | - |
 | 5. VM NER Evaluation & Measurement | 0/TBD | Not started | - |

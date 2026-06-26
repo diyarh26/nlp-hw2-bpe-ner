@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 2
 current_phase_name: Fast Encode + Training Efficiency
 status: executing
-stopped_at: Completed 02-01-PLAN.md; ready for 02-02-PLAN.md
-last_updated: "2026-06-25T13:55:00.000Z"
+stopped_at: Completed 02-02-PLAN.md; ready for 02-03-PLAN.md
+last_updated: "2026-06-25T14:06:00.000Z"
 last_activity: 2026-06-25
-last_activity_desc: Completed Phase 2 encode oracle and benchmark harness
+last_activity_desc: Completed Phase 2 cached encode rewrite
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
-  percent: 71
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -29,31 +29,31 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 2 of 6 (Fast Encode + Training Efficiency)
-Plan: 1 of 3 in current phase
-Status: Executing - ready for 02-02
-Last activity: 2026-06-25 - Completed Phase 2 encode oracle and benchmark harness
+Plan: 2 of 3 in current phase
+Status: Executing - ready for 02-03
+Last activity: 2026-06-25 - Completed Phase 2 cached encode rewrite
 
-Progress: [#######---] 71% overall planned work
+Progress: [#########-] 86% overall planned work
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5
-- Average duration: 26 min
-- Total execution time: 2.1 hours
+- Total plans completed: 6
+- Average duration: 23 min
+- Total execution time: 2.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 4 | 4 | 30 min |
-| 2 | 1 | 3 | 8 min |
+| 2 | 2 | 3 | 9 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01 (19 min), 01-02 (7 min), 01-03 (14 min), 01-04 (82 min), 02-01 (8 min)
-- Trend: Phase 1 hard gates are green; Phase 2 harness is ready for optimizer changes
+- Last 5 plans: 01-02 (7 min), 01-03 (14 min), 01-04 (82 min), 02-01 (8 min), 02-02 (10 min)
+- Trend: Phase 1 hard gates are green; Phase 2 encode speed work is complete
 
 *Updated after each plan completion*
 
@@ -74,6 +74,7 @@ Recent decisions affecting current work:
 - [01-04]: Phase-1 fallback tokenizers are generated at `--vocab_size 8000`; local CPU domain-1 NER best F1 was 0.4218; `HW2_214034621.zip` passes `check_submission.py` with no `[ERROR]`.
 - [02-plan]: Phase 2 is split into three plans: oracle/benchmark harness, cached encode rewrite, and weighted incremental trainer plus checker regression.
 - [02-01]: `code/speed_check.py` now provides slow replay encode oracle, cache/pickle probe, and baseline training probe.
+- [02-02]: `BPETokenizer.encode` now uses a runtime-only full-text cache with `_encode_uncached` and `_ids_from_symbols`; cache benchmark shows a clear repeated-call speed win.
 
 ### Pending Todos
 
@@ -100,6 +101,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-25T13:55:00Z
-Stopped at: Completed 02-01-PLAN.md; ready for 02-02-PLAN.md
-Resume file: .planning/phases/02-fast-encode-training-efficiency/02-02-PLAN.md
+Last session: 2026-06-25T14:06:00Z
+Stopped at: Completed 02-02-PLAN.md; ready for 02-03-PLAN.md
+Resume file: .planning/phases/02-fast-encode-training-efficiency/02-03-PLAN.md

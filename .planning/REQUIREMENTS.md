@@ -30,8 +30,8 @@ Committed scope for the submission. Each maps to a roadmap phase.
 
 ### Encode Speed & Training Efficiency (SPEED)
 
-- [ ] **SPEED-01**: `encode` uses a merge-rank greedy strategy (rank dict `{(a,b):rank}`), not a naive O(vocab×n) whole-string rescan.
-- [ ] **SPEED-02**: A per-chunk (per-word) encode cache memoizes repeated segments to exploit Zipfian text.
+- [x] **SPEED-01**: `encode` uses a merge-rank greedy strategy (rank dict `{(a,b):rank}`), not a naive O(vocab×n) whole-string rescan.
+- [x] **SPEED-02**: A per-chunk (per-word) encode cache memoizes repeated segments to exploit Zipfian text.
 - [ ] **SPEED-03**: Training uses weighted word-frequency chunks + incremental pair-count deltas with an inverted `pair→chunks` index (no full `Counter` recount per merge), so the 95MB/29MB corpora train in reasonable time.
 
 ### Per-Domain Tuning & Competition (TUNE)
@@ -99,8 +99,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | SERDE-03 | Phase 1 | Complete in 01-03 |
 | EVAL-01 | Phase 1 | Complete in 01-04 |
 | PKG-01 | Phase 1 | Complete in 01-04 |
-| SPEED-01 | Phase 2 | Pending |
-| SPEED-02 | Phase 2 | Pending |
+| SPEED-01 | Phase 2 | Complete in 02-02 |
+| SPEED-02 | Phase 2 | Complete in 02-02 |
 | SPEED-03 | Phase 2 | Pending |
 | TUNE-01 | Phase 3 | Pending |
 | TUNE-02 | Phase 3 | Pending |
