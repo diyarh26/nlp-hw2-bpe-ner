@@ -16,11 +16,38 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-25 (after commit `6e3656a`; plus this HANDOFF commit)
+- **Last updated by:** Codex - 2026-06-26 (after commit `5d4945e`; plus this HANDOFF commit)
 - **Phase:** 2 of 6 - Fast Encode + Training Efficiency
-- **Phase status:** Ready for planning. Phase 1 is complete: 4/4 plans closed.
-- **Code state:** `code/bpe_tokenizer.py` is a gates-first, pickle-safe BPE tokenizer with char-up training, mergeable space marker, one-internal-space cap, forced legal bigram, byte fallback, and exact decode reconstruction. `TRAIN_TEXT_LIMIT = 1000` is a temporary Phase 1 feasibility cap.
-- **Validation state:** Phase 1 fallback submission exists locally as ignored `HW2_214034621.zip`; it passes `check_submission.py` with no `[ERROR]` when run with `PYTHONIOENCODING=utf-8`. Local CPU NER on domain 1 reached best dev F1 `0.4218`.
+- **Phase status:** In progress - `02-01` and `02-02` complete; `02-03` Task 1 committed; `02-03` Task 2 is WIP/blocked on full generation speed.
+- **Code state:** `code/bpe_tokenizer.py` now has cached encode plus a weighted incremental trainer. `TRAIN_TEXT_LIMIT` has been removed. The current trainer passes local small-fixture oracle checks but is still too slow for full domain-1 vocab-8000 generation.
+- **Validation state:** `py -m uv run python code\speed_check.py --only all` and `py -m uv run python code\align_check.py` passed after commit `5d4945e`. Full `generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers` has NOT completed; `trained_tokenizers/` is currently empty.
+
+## WIP: 02-03 Task 2 Blocked
+
+Attempted the required full generation on 2026-06-26:
+
+```powershell
+py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
+```
+
+Result: timed out after 30 minutes. No `trained_tokenizers/tokenizer_1.pkl` was written, so it was still in tokenizer 1 / domain 1 training. The process tree survived the timeout and was manually stopped. `trained_tokenizers/` is empty.
+
+Quick diagnostics:
+
+- `domain_1_train.txt`: 1,280,508 lines, 1,266,678 unique lines, 95,082,468 chars, average length 74.25.
+- `domain_2_train.txt`: 319,707 lines, 316,459 unique lines, 29,268,720 chars, average length 91.55.
+- A bounded full-domain `domain_1` run at `vocab_size=1000` also timed out after about 3 minutes before producing output.
+- A 20k-line sampled cProfile at `vocab_size=1000` also timed out after about 3 minutes.
+- A 2k-line sampled cProfile at `vocab_size=700` completed in 51.776 seconds for 324 merges. Top cumulative hotspots:
+  - `_apply_indexed_merge`: 35.070s
+  - `_remove_sequence_pairs`: 17.272s
+  - `_best_indexed_pair`: 16.171s
+  - `_add_sequence_pairs`: 15.341s
+  - `_sequence_pair_counts`: 14.390s
+  - `_heapq.heappop`: 13.304s
+  - `_push_pair_heap`: 10.282s
+
+Interpretation: weighted unique texts barely reduce domain 1 because almost every line is unique. The current indexed trainer avoids full global recounts, but it still performs too much heap churn and repeated full sequence pair recounting for impacted sequences. Do not reintroduce a training-data cap as the normal path; optimize the incremental data structures instead.
 
 ## What was just done
 
@@ -92,31 +119,37 @@ Recent commits added by Codex:
 
 ## NEXT ACTION
 
-Plan and execute **Phase 2: Fast Encode + Training Efficiency**.
+Continue **Phase 2 / 02-03 Task 2** by optimizing the current weighted incremental trainer so full generation completes without reintroducing a normal training-data cap.
 
-Start by creating Phase 2 planning artifacts under `.planning/phases/02-fast-encode-training-efficiency/`, then implement the first safe slice. The roadmap success criteria are:
+Current likely optimization targets:
 
-- `encode` uses a merge-rank dict / greedy lowest-rank strategy and stays byte-identical to the Phase 1 encoder on dev samples.
-- Per-chunk encode cache measurably reduces repeated-segment encode time.
-- Training uses weighted word-frequency chunks plus incremental pair-count deltas with an inverted `pair -> chunks` index, replacing the temporary Phase 1 `TRAIN_TEXT_LIMIT = 1000` reliance.
-- All Phase 1 gates still pass after the rewrite: `align_check.py`, fresh pickle load/reproducibility, forbidden hash check, and checker-clean fallback zip.
+- Reduce lazy heap churn in `_best_indexed_pair` / `_push_pair_heap`.
+- Avoid full `_sequence_pair_counts` recounts for every impacted sequence on every merge; update local neighbor pairs around each replacement instead.
+- Consider representing each sequence with mutable token ids/linked neighbors or per-sequence pair positions so impacted updates are local.
+- Keep deterministic tie-breaking and Phase 1 gates intact.
+
+After optimizing, rerun:
+
+```powershell
+py -m uv run python code\speed_check.py --only all
+py -m uv run python code\align_check.py
+py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir trained_tokenizers
+py -m uv run python code\build_submission.py
+$env:PYTHONIOENCODING='utf-8'; py -m uv run python check_submission.py HW2_214034621.zip
+```
+
+Then close `.planning/phases/02-fast-encode-training-efficiency/02-03-PLAN.md` only if all checks pass.
 
 Read before editing:
 
-- `.planning/ROADMAP.md` Phase 2
-- `.planning/REQUIREMENTS.md` SPEED-01/SPEED-02/SPEED-03
-- `.planning/phases/01-gates-first-submittable-tokenizer/01-04-SUMMARY.md`
+- `.planning/phases/02-fast-encode-training-efficiency/02-03-PLAN.md`
+- `.planning/phases/02-fast-encode-training-efficiency/02-RESEARCH.md`
+- `.planning/phases/02-fast-encode-training-efficiency/02-VALIDATION.md`
 - `code/bpe_tokenizer.py`
-- `code/align_check.py`
+- `code/speed_check.py`
 - `generate_tokenizers.py`
+- `code/build_submission.py`
 - `check_submission.py`
-
-Useful verification commands:
-
-```powershell
-py -m uv run python code/align_check.py
-$env:PYTHONIOENCODING='utf-8'; py -m uv run python check_submission.py HW2_214034621.zip
-```
 
 ## Hard rules
 
@@ -140,7 +173,7 @@ $env:PYTHONIOENCODING='utf-8'; py -m uv run python check_submission.py HW2_21403
 - **uv PATH:** `uv` is installed in the user Python scripts directory. In PowerShell, either prepend `$env:APPDATA\Python\Python311\Scripts` to `PATH`, or run `py -m uv ...`.
 - **Checker encoding:** On Windows, set `$env:PYTHONIOENCODING='utf-8'` before `check_submission.py`; otherwise printing the space marker may fail even though the submission is valid.
 - **Ignored deliverables:** `trained_tokenizers/`, `models/`, and `HW2_214034621.zip` are ignored local artifacts. Rebuild the zip with `py -m uv run python code/build_submission.py` if these artifacts are missing.
-- **Current tokenizer note:** Phase 1 intentionally uses `TRAIN_TEXT_LIMIT = 1000`; Phase 2 should replace this with efficient training over weighted chunks rather than treating the cap as final.
+- **Current trainer note:** `TRAIN_TEXT_LIMIT` is gone. Full generation is blocked by trainer performance, not by correctness gates. Do not add a normal cap to make the run pass.
 - **Line endings:** Git reports LF-to-CRLF warnings on Windows. No functional issue observed.
 
 ## Key files map
