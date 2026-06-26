@@ -1,0 +1,7 @@
+domain,tokenizer_index,vocab_size,tokenizer_path,train_file,dev_file,f1,wall_time_minutes,log_path,notes
+1,1,8000,tuning/tokenizers/tokenizer_1_vocab8000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4352,0.9443,tuning/logs/vm_f1/tokenizer_1_vocab8000.log,completed
+1,1,4000,tuning/tokenizers/tokenizer_1_vocab4000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4237,0.8820,tuning/logs/vm_f1/tokenizer_1_vocab4000.log,completed
+1,1,16000,tuning/tokenizers/tokenizer_1_vocab16000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.3692,0.8217,tuning/logs/vm_f1/tokenizer_1_vocab16000.log,completed
+2,2,4000,tuning/tokenizers/tokenizer_2_vocab4000.pkl,data/ner_data/train_2_binary.tagged,data/ner_data/dev_2_binary.tagged,0.9610,3.6005,tuning/logs/vm_f1/tokenizer_2_vocab4000.log,completed
+2,2,8000,tuning/tokenizers/tokenizer_2_vocab8000.pkl,data/ner_data/train_2_binary.tagged,data/ner_data/dev_2_binary.tagged,0.9570,3.3208,tuning/logs/vm_f1/tokenizer_2_vocab8000.log,completed
+2,2,16000,tuning/tokenizers/tokenizer_2_vocab16000.pkl,data/ner_data/train_2_binary.tagged,data/ner_data/dev_2_binary.tagged,0.9557,3.2012,tuning/logs/vm_f1/tokenizer_2_vocab16000.log,completed
