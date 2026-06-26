@@ -397,17 +397,15 @@ This is not a rename/refactor/migration phase, so no runtime state migration is 
 | A4 | Score weights and tie-breakers are appropriate for hidden generalization. | Hidden-Generalization Scoring | Hidden-domain distribution is unknown, so weights may not match grader behavior. |
 | A5 | Visible-domain tok3 F1 is a robustness/regression signal, not a hidden-domain substitute. | VM F1 Sweep Design | If the hidden domain resembles one visible domain strongly, this may underweight the closest visible domain. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the generated mix file be committed or regenerated only?**
    - What we know: Raw corpora are large and some artifacts are gitignored. [CITED: HANDOFF.md]
-   - What's unclear: Whether `data/tok3_mix_d1sample_d2all_seed42.txt` should be versioned.
-   - Recommendation: Commit the helper and manifest; regenerate the mix locally/VM unless planner confirms artifact tracking. [ASSUMED]
+   - RESOLVED: Do not commit the large generated mix by default. Commit the helper, manifest, reproducibility proof, and exact commands; regenerate the mix locally/VM from those artifacts. If VM transfer requires carrying the generated mix as an ignored artifact, record that in `HANDOFF.md` rather than treating the mix as source of truth. [ASSUMED]
 
 2. **How much VM time remains when Phase 4 starts?**
    - What we know: The project has a 10-hour VM budget and Phase 3 consumed only minutes for the six F1 runs. [VERIFIED: local file audit]
-   - What's unclear: Current `time_left` on the course VM.
-   - Recommendation: Add a Wave 3 preflight task to capture `time_left`, CUDA availability, and `torch.cuda.get_device_name(0)`. [ASSUMED]
+   - RESOLVED: Exact `time_left` is execution-time VM state, not a planning prerequisite. Plan 04-03 captures `time_left` when available, CUDA availability, GPU name, and the first-run wall time before continuing; the stop-rule gates the remaining six-run sweep. [ASSUMED]
 
 ## Environment Availability
 
