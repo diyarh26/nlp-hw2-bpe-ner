@@ -16,9 +16,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Gates-First Submittable Tokenizer** - Complete minimal BPE that passes all hard gates, decodes length-faithfully, pickles/reproduces, and clears F1>=0.4 on one domain end-to-end
 - [x] **Phase 2: Fast Encode + Training Efficiency** - Rank-map greedy encoder with per-chunk cache and weighted/incremental training so the corpora train fast and the speed axis is competitive
 - [x] **Phase 3: Per-Domain Tuning (Tokenizers 1 & 2)** - Vocab-size sweep on the F1/efficiency knee to tune Twitter (tok 1) and news (tok 2) configs
-- [ ] **Phase 4: Tokenizer 3 Hidden-Domain Generalization** - Balanced/deduped domain-1+2 mix + byte fallback so the unseen domain incurs zero UNK and degrades gracefully
-- [ ] **Phase 5: VM NER Evaluation & Measurement** - All three tokenizers measured for F1, efficiency, and speed on the VM within the 10h budget, with `train_commands.txt` finalized
-- [ ] **Phase 6: Report & Final Packaging** - <=1-page formatted report with all mandatory content and the final checker-validated submission zip
+- [x] **Phase 4: Tokenizer 3 Hidden-Domain Generalization** - Balanced/deduped domain-1+2 mix + byte fallback so the unseen domain incurs zero UNK and degrades gracefully
+- [x] **Phase 5: VM NER Evaluation & Measurement** - All three tokenizers measured for F1, efficiency, and speed on the VM within the 10h budget, with `train_commands.txt` finalized
+- [x] **Phase 6: Report & Final Packaging** - <=1-page formatted report with all mandatory content and the final checker-validated submission zip
 
 ## Phase Details
 
@@ -108,10 +108,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 4 plans
 
-- [ ] 04-01-PLAN.md - Deterministic tok3 mix helper, generated mix artifact, manifest, and reproduction command
-- [ ] 04-02-PLAN.md - Generator-backed tok3 candidates at 4000/8000/16000 plus CPU/OOV evidence
-- [ ] 04-03-PLAN.md - VM F1 runbook and visible-domain tok3 results with CUDA/time-left stop-rule
-- [ ] 04-04-PLAN.md - Hidden-generalization scoring, selected tok3 staging, submission rebuild, and planning close-out
+- [x] 04-01-PLAN.md - Deterministic tok3 mix helper, generated mix artifact, manifest, and reproduction command
+- [x] 04-02-PLAN.md - Generator-backed tok3 candidates at 4000/8000/16000 plus CPU/OOV evidence
+- [x] 04-03-PLAN.md - VM F1 runbook and visible-domain tok3 results with CUDA/time-left stop-rule
+- [x] 04-04-PLAN.md - Hidden-generalization scoring, selected tok3 staging, submission rebuild, and planning close-out
 
 ### Phase 5: VM NER Evaluation & Measurement
 
@@ -152,6 +152,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Gates-First Submittable Tokenizer | 4/4 | Complete | 2026-06-25 |
 | 2. Fast Encode + Training Efficiency | 3/3 | Complete | 2026-06-26 |
 | 3. Per-Domain Tuning (Tokenizers 1 & 2) | 3/3 | Complete | 2026-06-26 |
-| 4. Tokenizer 3 Hidden-Domain Generalization | 0/TBD | Not started | - |
-| 5. VM NER Evaluation & Measurement | 0/TBD | Not started | - |
-| 6. Report & Final Packaging | 0/TBD | Not started | - |
+| 4. Tokenizer 3 Hidden-Domain Generalization | 4/4 | Complete | 2026-06-27 |
+| 5. VM NER Evaluation & Measurement | 1/1 | Complete | 2026-06-27 |
+| 6. Report & Final Packaging | 1/1 | Complete | 2026-06-27 |

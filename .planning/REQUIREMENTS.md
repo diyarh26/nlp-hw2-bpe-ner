@@ -26,7 +26,7 @@ Committed scope for the submission. Each maps to a roadmap phase.
 - [x] **SERDE-01**: The trained tokenizer pickles and unpickles from `code/` alone — only plain dict/list/tuple/str/int state, no lambdas/closures/`defaultdict(lambda)`/local classes.
 - [x] **SERDE-02**: The regex is stored as a pattern string (not a compiled `Pattern`); the runtime encode cache is dropped on pickle via `__getstate__`/`__setstate__` and recompiled on load.
 - [x] **SERDE-03**: All three tokenizers are byte-reproducible via the unedited `generate_tokenizers.py` with a fixed seed.
-- [ ] **SERDE-04**: `train_commands.txt` at the zip root lists the exact commands (vocab sizes, `--train_files_3`, etc.) used to produce `tokenizer_{1,2,3}.pkl`.
+- [x] **SERDE-04**: `train_commands.txt` at the zip root lists the exact commands (vocab sizes, `--train_files_3`, etc.) used to produce `tokenizer_{1,2,3}.pkl`.
 
 ### Encode Speed & Training Efficiency (SPEED)
 
@@ -51,14 +51,14 @@ Committed scope for the submission. Each maps to a roadmap phase.
 
 - [x] **EVAL-01**: NER F1 ≥ 0.4 on `dev_1_binary.tagged` (domain 1) using tokenizer 1.
 - [x] **EVAL-02**: NER F1 ≥ 0.4 on `dev_2_binary.tagged` (domain 2) using tokenizer 2.
-- [ ] **EVAL-03**: Tokenizer efficiency (tokens/char or tokens/sentence) and tokenization speed are measured and reported on the dev files for each tokenizer.
-- [ ] **EVAL-04**: All GPU NER runs are executed on the course VM within the 10h budget, after local gates are green.
+- [x] **EVAL-03**: Tokenizer efficiency (tokens/char or tokens/sentence) and tokenization speed are measured and reported on the dev files for each tokenizer.
+- [x] **EVAL-04**: All GPU NER runs are executed on the course VM within the 10h budget, after local gates are green.
 
 ### Submission & Report (PKG)
 
 - [x] **PKG-01**: The submission zip (`HW2_214034621.zip`) matches the required structure exactly and passes `check_submission.py` (code/, trained_tokenizers/tokenizer_{1,2,3}.pkl, report, train_commands.txt).
-- [ ] **PKG-02**: `report_214034621.pdf` meets the format rules (≤1 A4 page, Arial 10, 1.15 spacing, 2.54cm margins, single column, captioned centered images, in-image text ≥9pt).
-- [ ] **PKG-03**: Report contains all mandatory content: author (Diyar Husayyan, 214034621); per-tokenizer explanation (deviation from basic BPE + hidden-domain handling); top-5 & bottom-5 most/least common training bigrams; dev F1 + efficiency per model; hidden-domain evaluation; model-2 performance + parameter/characteristic/improvement discussion.
+- [x] **PKG-02**: `report_214034621.pdf` meets the format rules (≤1 A4 page, Arial 10, 1.15 spacing, 2.54cm margins, single column, captioned centered images, in-image text ≥9pt).
+- [x] **PKG-03**: Report contains all mandatory content: author (Diyar Husayyan, 214034621); per-tokenizer explanation (deviation from basic BPE + hidden-domain handling); top-5 & bottom-5 most/least common training bigrams; dev F1 + efficiency per model; hidden-domain evaluation; model-2 performance + parameter/characteristic/improvement discussion.
 
 ## v2 Requirements
 
@@ -110,11 +110,11 @@ Which phases cover which requirements. Populated during roadmap creation.
 | GEN-02 | Phase 4 | Complete in 04-02/04-04 (zero-UNK, OOV 15/15, byte fallback) |
 | GEN-03 | Phase 4 | Complete in 04-03/04-04 (VM F1 + tok3_selection.csv evidence) |
 | EVAL-02 | Phase 3 | Complete in 03-03 (tok2 vocab 16000 VM F1 = 0.9557) |
-| EVAL-03 | Phase 5 | Pending |
-| EVAL-04 | Phase 5 | Pending |
-| SERDE-04 | Phase 5 | Pending |
-| PKG-02 | Phase 6 | Pending |
-| PKG-03 | Phase 6 | Pending |
+| EVAL-03 | Phase 5 | Complete in final_eval.csv / report |
+| EVAL-04 | Phase 5 | Complete in VM sweeps |
+| SERDE-04 | Phase 5 | Complete in train_commands.txt |
+| PKG-02 | Phase 6 | Complete in report_214034621.pdf |
+| PKG-03 | Phase 6 | Complete in report_214034621.pdf |
 
 **Coverage:**
 - v1 requirements: 29 total (CORE 5, ALIGN 3, SERDE 4, SPEED 3, TUNE 4, GEN 3, EVAL 4, PKG 3)
@@ -125,4 +125,4 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-24*
-*Last updated: 2026-06-26 after Phase 3 per-domain tuning close-out*
+*Last updated: 2026-06-27 after Phase 6 final packaging*

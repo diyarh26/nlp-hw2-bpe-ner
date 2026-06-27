@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 5
-current_phase_name: Final Evaluation (VM F1 + competition measurement)
-status: ready_to_plan
-stopped_at: Phase 4 complete (tok3 vocab 8000 staged); next is Phase 5
-last_updated: "2026-06-27T00:00:00.000Z"
+current_phase: 6
+current_phase_name: Report & Final Packaging
+status: complete
+stopped_at: Submission finalized; no remaining planned work
+last_updated: "2026-06-27T18:35:00.000+03:00"
 last_activity: 2026-06-27
-last_activity_desc: Closed 04-04 — tok3 vocab 8000 (mix-trained) selected and staged; Phase 4 complete
+last_activity_desc: Final report written, submission zip rebuilt, checker/align/speed/forbidden hashes green
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
-  percent: 67
+  completed_phases: 6
+  total_plans: 16
+  completed_plans: 16
+  percent: 100
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Three correct, reproducible BPE tokenizers that pass every hard gate and score well on the competition's three axes (efficiency, speed, F1), including the hidden domain.
-**Current focus:** Phase 4 - Tokenizer 3 Hidden-Domain Generalization
+**Current focus:** Submission finalized - report and checker-valid zip are ready.
 
 ## Current Position
 
-Phase: 5 of 6 (Final Evaluation) - Phase 4 complete
-Plan: Phase 4 closed (4/4); tok3 vocab 8000 (mix-trained) staged
-Status: Ready to plan/execute Phase 5 (final VM F1 + competition measurement)
-Last activity: 2026-06-27 - Closed 04-04 (tok3 vocab 8000 selected and staged; all gates green)
+Phase: 6 of 6 (Report & Final Packaging) - complete
+Plan: Final report and package close-out complete
+Status: Final `HW2_214034621.zip` is checker-valid; align/speed/forbidden hashes green
+Last activity: 2026-06-27 - Wrote `report_214034621.pdf`, rebuilt zip, and verified all final gates
 
-Progress: [######----] 67% (4 of 6 phases complete; all planned plans done)
+Progress: [##########] 100% (6 of 6 phases complete; all planned plans done)
 
 ## Performance Metrics
 
@@ -83,6 +83,8 @@ Recent decisions affecting current work:
 - [04-01/02]: Tok3 trains on a deterministic balanced mix (all domain-2 + same-count SHA-256 sample of domain-1, exact-line dedup after mixing, 634,359 lines); 3 generator-produced candidates (vocab 4000/8000/16000); CPU/OOV gates all green (0 UNK, recon 1.0, >=1 bigram, 0 trigram, OOV 15/15).
 - [04-03]: Tok3 visible-domain VM F1 decreases with vocab — 4000 d1=0.4450/d2=0.9616, 8000 d1=0.4217/d2=0.9587, 16000 d1=0.3792/d2=0.9585 (larger mix-vocab over-merges).
 - [04-04]: Hidden-generalization score top pick was 4000; user selected vocab **8000** (balanced: ~14% better efficiency than 4000 for ~0.013 mean-F1 cost, medium-vocab range). Staged mix-trained tok3@8000; byte-reproducible vs fresh generator; tok1/tok2 preserved; align/speed/build/check all green. GEN-01/02/03 complete.
+- [05]: Final tokenizers measured in `tuning/results/final_eval.csv`: tok1 mix@6000 F1=0.4780, tok2 vocab16000 F1=0.9557, tok3 mix@8000 F1=0.4217/0.9587 with efficiency/speed logged.
+- [06]: `report_214034621.pdf` was generated as a one-page Arial report with top/bottom merge bigrams, dev F1/efficiency, hidden-domain rationale, and model-2 discussion. `HW2_214034621.zip` rebuilt and `check_submission.py`, `align_check.py`, `speed_check.py --only all`, and forbidden hashes all passed.
 
 ### Pending Todos
 
@@ -109,6 +111,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-26
-Stopped at: Phase 4 context gathered; next is planning Phase 4
-Resume file: .planning/phases/04-tokenizer-3-hidden-domain-generalization/04-CONTEXT.md
+Last session: 2026-06-27
+Stopped at: Final submission complete; no remaining planned work
+Resume file: HANDOFF.md
