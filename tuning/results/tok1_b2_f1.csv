@@ -1,0 +1,5 @@
+variant,vocab_size,train_data,pretok,f1,wall_time_minutes,log_path,notes
+mix_v6000,6000,balanced-mix,structured,0.4264,1.0832,tuning/logs/tok1_b2/mix_v6000.log,twitter train_1/dev_1
+mix_v8000,8000,balanced-mix,structured,0.3906,0.8805,tuning/logs/tok1_b2/mix_v8000.log,twitter train_1/dev_1
+mix_v10000,10000,balanced-mix,structured,0.4128,0.8700,tuning/logs/tok1_b2/mix_v10000.log,twitter train_1/dev_1
+mix_v12000,12000,balanced-mix,structured,0.4000,0.8790,tuning/logs/tok1_b2/mix_v12000.log,twitter train_1/dev_1
