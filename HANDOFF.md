@@ -16,11 +16,13 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-27 (user PDF packaged into final zip)
-- **Phase:** 6 of 6 complete. Submission is finalized.
-- **Phase status:** **COMPLETE.** tok1 = balanced mix @ vocab 6000 (**0.4780**), tok2 = news vocab 16000 (**0.9557**), tok3 = balanced dedup mix @ vocab 8000 (**0.4217/0.9587**). All final measurements are in `tuning/results/final_eval.csv`.
-- **Code state:** `code/bpe_tokenizer.py` remains pure-`\X`; no tokenizer changes were made. `code/build_submission.py` packages `code/make_tok3_mix.py` alongside `code/bpe_tokenizer.py` so `train_commands.txt` can reproduce the tok1/tok3 mix path from the submission zip. `code/make_report.py` reports assignment-defined bigrams: full-file adjacent two-word sequence counts from each tokenizer's training file, not BPE merge pairs. `code/make_word_report.py` now generates the polished editable Word report `report_214034621.docx` without adding dependencies.
-- **Validation state:** `report_214034621.pdf` is regenerated and `HW2_214034621.zip` is rebuilt/committed. Final verification: `check_submission.py HW2_214034621.zip` VALID (only `[OK]`/`[RESULT]`), `code/align_check.py` PASS, `code/speed_check.py --only all` PASS, forbidden hashes OK for all four protected files. Clean-room reproduction from the zip regenerated tok1/tok3 via `make_tok3_mix.py` + `generate_tokenizers.py`; regenerated `tokenizer_1.pkl` was byte-identical to shipped (`ef7db8c2382f3c7d7a48828d8ae1da5007ff0c65d746fa3a248fae37d673db14`) and regenerated `tokenizer_3.pkl` was byte-identical to shipped (`f03aac21afaa350e5ac5b09ffe501b7400524dc558c18f7b9fc42aed2254e6d9`). Word report: `report_214034621.docx`, verified by Word COM as exactly 1 A4 page with Arial 10pt, 1.15 spacing, and 2.54cm margins. `HW2_214034621.zip` still contains no DOCX.
+- **Last updated by:** Claude - 2026-06-27 (OPTIMIZATION ROUND: Lever 1 speed win shipped; Lever 2 studied + declined). **Handing baton to Codex with a fresh limit — see NEXT ACTION for the full agenda.**
+- **Phase:** Optimization round on top of the complete Phase-6 submission.
+- **Tokenizers UNCHANGED (byte-identical to the finalized submission):** tok1 = balanced mix @ vocab 6000 (**0.4780**, `ef7db8c2…`), tok2 = news vocab 16000 (**0.9557**, `ae7c16f4…`), tok3 = balanced dedup mix @ vocab 8000 (**0.4217/0.9587**, `f03aac21…`). All three reproduce byte-identical via the unedited generator with the new code. Final F1/efficiency in `tuning/results/final_eval.csv`.
+- **LEVER 1 (encode speed) — DONE, committed `8cd1c55`, pushed.** Replaced the O(n²) `_apply_ranked_merges` (full rescan per merge) with an O(n·log n) lazy max-heap over an intrusive doubly-linked list. **Output byte-identical** to BOTH the slow apply-merges-in-order oracle AND a frozen copy of the old greedy loop (verified on 13.5k+ real dev lines + edge cases for all 3 tokenizers); align_check + speed_check `--only all` green; all 3 pkls reproduce byte-identical (training unaffected — the forced-bigram path calls the same method); check_submission NER metrics unchanged. **Cold single-pass encode (measure_final, public path): tok1 24.9k→314k tok/s, tok2 14.8k→207k, tok3 ~14-29k→306k (~10-22×).** Efficiency (tok/char, tok/sent), F1, bigram/trigram/unk all unchanged. Added `code/encode_bench.py` (measure-only throughput + byte-identity harness; NOT shipped).
+- **LEVER 2 (controlled cross-word bigrams) — IMPLEMENTED, STUDIED, DECLINED for shipping (user decision).** Added a reproducible, capped collocation phase gated by module constant `EXTRA_CROSS_WORD_BIGRAMS` (default **0** ⇒ byte-identical baseline, proven: tok1 K=0 reproduces `ef7db8c2`). CPU sweep on tok1 (`code/make_bigram_sweep.py` → `tuning/results/bigram_sweep_cpu.csv`): adding up to 40 collocations cut tokens/sentence by only **~0.1-0.15%**, and the mined pairs were punctuation/quote-dominated and crossed entity-adjacent boundaries (`"I think`, `, the`, `ed to`, `ing the`) — the exact entity-boundary risk that sank the earlier Batch-2 tok1 change. Poor ROI on a relatively-scored axis vs real F1 risk ⇒ **ship K=0** and tell it in the report as a studied efficiency/F1 tradeoff (creativity/novelty + honest negative result). The gated code stays in `bpe_tokenizer.py` so the report's claim is verifiable from the submitted code.
+- **Report:** `code/make_report.py` updated with (a) a Speed paragraph narrating the O(n·log n) byte-identical encode optimization, and (b) an expanded cross-word-bigram note describing the controlled-collocation study + tradeoff. `report_214034621.pdf` regenerated, still **1 A4 page**. The metric table auto-pulls the new cold tok/s from `final_eval.csv`.
+- **Validation state at handoff:** align_check PASS, speed_check `--only all` PASS, encode_bench OVERALL PASS, forbidden hashes OK, all 3 pkls byte-reproducible. **Codex must still: rebuild the zip with the new report, run the FULL check_submission NER pass, and clean-room reproduce all 3 pkls (see NEXT ACTION).**
 
 ## What was just done (most recent first)
 
@@ -48,23 +50,30 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 - **02-01:** `code/speed_check.py` oracle/benchmark harness (encode replay oracle, cache probe, train-vs-full-recount probe).
 - **Phase 1 (complete, 01-01..01-04):** scaffold extracted; `uv` env; `align_check.py` (VP1-4,6); char-up BPE with `▁` marker, capped bigram, byte fallback, length-faithful decode; pickle hardening; first submittable zip; local CPU domain-1 NER best F1 was **0.4218** (with the old capped tokenizer).
 
-## NEXT ACTION
+## NEXT ACTION (Codex — fresh limit, full agenda)
 
-**No remaining implementation or packaging action.** Phase 6 is complete and the final deliverables are ready:
+Claude shipped Lever 1 (committed `8cd1c55`, pushed) and updated the report + Lever 2 code in the working tree. **First `git pull`.** Claude will have committed the working-tree changes before handing off — confirm `git log` shows the Lever-2/report commit and a rebuilt-zip commit; if the tree is dirty, finish staging per the commit list at the bottom. Then work this agenda top-to-bottom, committing each block.
 
-- `report_214034621.pdf`
-- `HW2_214034621.zip`
-- `report_214034621.docx` (editable Word copy for user review/export)
+**A. Re-establish the hard gates on the rebuilt submission (do FIRST — never ship unverified).**
+1. `py -m uv run python code/build_submission.py` (rebuild zip with the new `report_214034621.pdf`).
+2. `$env:PYTHONIOENCODING='utf-8'; py -m uv run python check_submission.py HW2_214034621.zip` → must be only `[OK]`/`[RESULT]` (VALID). The new in-zip `bpe_tokenizer.py` (heap encoder + gated collocations) must load and the NER metrics must match the baseline (encode is byte-identical).
+3. `py -m uv run python code/align_check.py` (PASS) and `py -m uv run python code/speed_check.py --only all` (ORACLE+CACHE+TRAIN PASS).
+4. `py -m uv run python code/encode_bench.py --lines 4000 --repeat 3` → OVERALL PASS (encode byte-identical to oracle + frozen reference greedy) and record the chars/s.
+5. Forbidden-file SHA-256 check vs `.planning/phases/01-gates-first-submittable-tokenizer/forbidden_files.sha256` → all OK.
+6. **Clean-room reproduce ALL THREE pkls** via the unedited generator + `train_commands.txt` (build the mix with `make_tok3_mix.py` first; tok2 = `--vocab_size 16000`, tok1 = mix `--vocab_size 6000 --train_files_1 …`, tok3 = mix `--vocab_size 8000 --train_files_3 …`). Byte-compare: tok1 `ef7db8c2…`, tok2 `ae7c16f4…`, tok3 `f03aac21…`. (Tip: to avoid retraining the unneeded slots, point the other two `--train_files_*` at a 4-line stub — training is RNG-free so each pkl depends only on its own file + vocab.)
+7. PDF ≤1 page: `py -m uv run python -c "import re;d=open('report_214034621.pdf','rb').read();print(len(re.findall(rb'/Type\\s*/Page(?![s])',d)))"` → 1.
 
-Completed final verification on 2026-06-27:
-- `py -m uv run python check_submission.py HW2_214034621.zip` -> VALID (only `[OK]`/`[RESULT]`)
-- `py -m uv run python code/align_check.py` -> PASS
-- `py -m uv run python code/speed_check.py --only all` -> PASS
-- Forbidden-file SHA-256 check -> OK for `code/base_tokenizer.py`, `code/train_ner_model.py`, `generate_tokenizers.py`, and `check_submission.py`
-- Clean-room reproduction from `HW2_214034621.zip` -> regenerated tok1/tok3 are byte-identical to shipped (`ef7db8c2...` and `f03aac21...`)
-- `report_214034621.docx` -> Microsoft Word page count 1; DOCX XML confirms A4, 2.54cm margins, Arial 10pt, 1.15 spacing; `HW2_214034621.zip` contains no DOCX
+**B. VM F1 confirmation (belt-and-suspenders; uses the GitHub→VM relay).** Lever 1 is byte-identical so F1 is *mathematically* unchanged, but a VM re-score certifies it for the report. Prepare a paste-ready prompt that runs `code/train_ner_model.py` on the three shipped pkls (tok1→dev_1, tok2→dev_2, tok3→dev_1 & dev_2, unchanged NER hyperparams) and confirms F1 = 0.4780 / 0.9557 / 0.4217 / 0.9587. Write results to `tuning/results/lever1_f1_confirm.csv`. The user runs it; you analyze. (Skip only if the user says the byte-identity proof is enough — note that option to them.)
 
-If resuming only to submit, use the committed `HW2_214034621.zip`.
+**C. Strengthen the report's Lever 2 study WITHOUT shipping bigrams (user shipped K=0).** Optional but high-value for the 20% report axis: rewrite the collocation mining to be corpus-wide and restricted to alphabetic-word pairs (so it finds clean `in the`/`of the`/`to the` instead of punctuation noise), re-run `code/make_bigram_sweep.py` to size the *best-case* efficiency gain, and fold the sharper number into the report. STILL ship K=0 — this only makes the negative-result narrative more rigorous. Do NOT change the shipped tokenizers.
+
+**D. Report polish for the 20% axis.** Read `report_214034621.pdf` end-to-end. Verify every claim against `final_eval.csv` and the gates. Tighten wording; keep it exactly 1 A4 page (Arial 10pt, 1.15, 2.54cm). Consider a tiny "encode throughput" line from `encode_bench.py` if it fits. Regenerate via `code/make_report.py`, rebuild zip, re-run gate A.
+
+**E. (If the user wants the editable Word copy refreshed)** update `code/make_word_report.py` to match the new PDF narrative and regenerate `report_214034621.docx` (1 page, no DOCX in the zip). NOTE: a Word lock file `~$port_214034621.docx` exists (Word is/was open) and `report_214034621.docx` shows as modified in git from before this round — do NOT clobber it without checking with the user; it is NOT part of the submission zip.
+
+**F. Finalize.** Update this HANDOFF (Current status + What was just done + NEXT ACTION), keep the tree clean, commit, push.
+
+If resuming only to submit RIGHT NOW, the committed `HW2_214034621.zip` after block A is valid and strictly faster than the previous submission (identical F1/efficiency).
 
 ## Hard rules
 
