@@ -1,0 +1,6 @@
+variant,vocab_size,train_data,f1,wall_time_minutes,log_path,notes
+d1_v6000,6000,domain1,0.4452,1.1975,tuning/logs/tok1_exp/d1_v6000.log,completed
+d1_v10000,10000,domain1,0.4633,0.8573,tuning/logs/tok1_exp/d1_v10000.log,completed
+mix_v6000,6000,balanced-mix,0.4780,0.8813,tuning/logs/tok1_exp/mix_v6000.log,completed
+d1d2_v6000,6000,domain1+2,0.4263,0.8778,tuning/logs/tok1_exp/d1d2_v6000.log,completed
+d1d2_v8000,8000,domain1+2,0.4271,0.8643,tuning/logs/tok1_exp/d1d2_v8000.log,completed
