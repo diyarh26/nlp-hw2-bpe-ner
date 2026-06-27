@@ -21,14 +21,17 @@ SPACE_TOKEN = "▁"
 BYTE_PREFIX = ""
 PRETOKEN_PATTERN = r"\X"
 FORCED_BIGRAM_SAMPLE_LINES = 4000
+ALPHA_WORD_RE = regex.compile(r"\A\p{L}+\Z")
+STARTS_ALPHA_RE = regex.compile(r"\A\p{L}")
+ENDS_ALPHA_RE = regex.compile(r"\p{L}\Z")
 
 # Lever 2 -- controlled cross-word bigrams. With 0 (the default) training is
 # byte-identical to the subword-only baseline plus the single mandatory forced
 # bigram. With N > 0 the last N vocab slots are filled by the N most frequent
-# legal cross-word collocations mined from the corpus (capped at one internal
-# space, so never a 3-word token). It is a module constant because the unedited
-# generate_tokenizers.py forwards only --vocab_size; each tokenizer still mines
-# its own collocations from its own training text.
+# legal alphabetic-word collocations mined from the full corpus (capped at one
+# internal space, so never a 3-word token). It is a module constant because the
+# unedited generate_tokenizers.py forwards only --vocab_size; each tokenizer
+# still mines its own collocations from its own training text.
 EXTRA_CROSS_WORD_BIGRAMS = 0
 
 
@@ -259,17 +262,17 @@ class BPETokenizer(BaseTokenizer):
     def _add_cross_word_collocations(self, texts: Sequence[str], max_count: int) -> None:
         """Append up to ``max_count`` cross-word collocation merges by frequency.
 
-        Greedy by corpus frequency: each pass re-encodes a fixed frequent-line
-        sample with the merges learned so far and merges the single most frequent
-        legal one-internal-space pair not already a merge, so the next pass sees
-        that collocation already fused and finds the next one. The one-space cap
+        Study-only Lever 2 path: scan the whole corpus after the subword merges
+        are learned, keep only whole alphabetic word pairs (e.g. ``in the``),
+        and append the highest-frequency legal pairs. The one-space cap
         (``_legal_merge``) keeps every token to at most two words.
         """
-        sample = self._frequent_line_sample(texts)
-        while max_count > 0 and len(self.token_to_id) < self.vocab_size:
-            pair = self._best_cross_word_pair(sample)
-            if pair is None:
+        counts = self._alpha_word_cross_pair_counts(texts)
+        for pair, _count in sorted(counts.items(), key=_pair_sort_key):
+            if max_count <= 0 or len(self.token_to_id) >= self.vocab_size:
                 break
+            if pair in self.merge_ranks:
+                continue
             self._record_merge(pair)
             max_count -= 1
 
@@ -505,6 +508,42 @@ class BPETokenizer(BaseTokenizer):
         if not counts:
             return None
         return min(counts.items(), key=_pair_sort_key)[0]
+
+    def _alpha_word_cross_pair_counts(self, texts: Sequence[str]) -> Counter:
+        counts: Counter = Counter()
+        for line in texts:
+            symbols = self._apply_ranked_merges(self._text_to_encode_symbols(line))
+            for index in range(len(symbols) - 1):
+                if not self._is_whole_alpha_cross_pair(symbols, index):
+                    continue
+                counts[(symbols[index], symbols[index + 1])] += 1
+        return counts
+
+    def _is_whole_alpha_cross_pair(self, symbols: Sequence[str], index: int) -> bool:
+        left = symbols[index]
+        right = symbols[index + 1]
+        pair = (left, right)
+        if pair in self.merge_ranks or not self._legal_merge(left, right):
+            return False
+        if self.space_token in left or not right.startswith(self.space_token):
+            return False
+
+        surface = (left + right).replace(self.space_token, " ").strip()
+        parts = surface.split()
+        if len(parts) != 2 or not all(ALPHA_WORD_RE.fullmatch(part) for part in parts):
+            return False
+
+        # Reject suffix/prefix fragments: alphabetic neighbours without a space
+        # marker mean the candidate is only part of a larger word.
+        if index > 0:
+            prev_surface = symbols[index - 1].replace(self.space_token, " ")
+            if ENDS_ALPHA_RE.search(prev_surface):
+                return False
+        if index + 2 < len(symbols):
+            next_surface = symbols[index + 2].replace(self.space_token, " ")
+            if STARTS_ALPHA_RE.search(next_surface):
+                return False
+        return True
 
     def _forced_cross_word_bigram_pair(self, texts: Sequence[str]) -> Tuple[str, str] | None:
         return self._best_cross_word_pair(self._frequent_line_sample(texts))

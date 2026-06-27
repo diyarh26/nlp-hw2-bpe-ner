@@ -70,6 +70,17 @@ def bigram_trigram(tok: BPETokenizer) -> tuple[int, int]:
     return big, tri
 
 
+def merge_bigram_surfaces(tok: BPETokenizer, limit: int = 12) -> str:
+    surfaces = []
+    for left, right in tok.merges:
+        surface = (left + right).replace(tok.space_token, " ").strip()
+        if surface.count(" ") == 1:
+            surfaces.append(surface)
+        if len(surfaces) >= limit:
+            break
+    return " | ".join(surfaces)
+
+
 def measure(tok: BPETokenizer, dev_lines: list[str]) -> dict:
     unk_id = tok.special_tokens["[UNK]"]
     total_tokens = total_chars = n_sent = unk = recon_ok = recon_n = 0
@@ -130,7 +141,13 @@ def main() -> int:
                 control = "MATCH" if sha == SHIPPED_TOK1_SHA else "MISMATCH"
             reloaded = BaseTokenizer.load(str(pkl))
             m = measure(reloaded, dev_lines)
-            m.update({"k": k, "sha256": sha, "control": control, "pkl": str(pkl.relative_to(ROOT_DIR))})
+            m.update({
+                "k": k,
+                "sha256": sha,
+                "control": control,
+                "bigram_surfaces": merge_bigram_surfaces(reloaded),
+                "pkl": str(pkl.relative_to(ROOT_DIR)),
+            })
             rows.append(m)
             print(
                 f"k={k:<3} vocab={m['vocab_size']} tok/char={m['tokens_per_char']:.6f} "
@@ -138,6 +155,8 @@ def main() -> int:
                 f"trigrams={m['trigram_token_count']} unk={m['unk_count']} "
                 f"recon={m['reconstruction_rate']:.4f} {control} {sha[:12]}"
             )
+            if m["bigram_surfaces"]:
+                print(f"  bigrams: {m['bigram_surfaces']}")
     finally:
         bpe_tokenizer.EXTRA_CROSS_WORD_BIGRAMS = original
 
@@ -151,7 +170,7 @@ def main() -> int:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     fields = ["k", "vocab_size", "tokens_per_char", "tokens_per_sentence", "dev_tokens",
               "dev_sentences", "bigram_token_count", "trigram_token_count", "unk_count",
-              "reconstruction_rate", "control", "sha256", "pkl"]
+              "reconstruction_rate", "control", "sha256", "bigram_surfaces", "pkl"]
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=fields)
         w.writeheader()
