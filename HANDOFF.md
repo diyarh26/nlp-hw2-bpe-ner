@@ -16,14 +16,15 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-27 (Phase 6 complete; final report + zip committed)
+- **Last updated by:** Codex - 2026-06-27 (report bigram correction complete; final PDF/zip regenerated)
 - **Phase:** 6 of 6 complete. Submission is finalized.
 - **Phase status:** **COMPLETE.** tok1 = balanced mix @ vocab 6000 (**0.4780**), tok2 = news vocab 16000 (**0.9557**), tok3 = balanced dedup mix @ vocab 8000 (**0.4217/0.9587**). All final measurements are in `tuning/results/final_eval.csv`.
-- **Code state:** `code/bpe_tokenizer.py` remains pure-`\X`; no tokenizer changes were made in Phase 6. `code/build_submission.py` now preserves the existing report instead of overwriting it with a placeholder. `code/make_report.py` generates the one-page report from shipped pickles and final CSVs.
-- **Validation state:** `report_214034621.pdf` is written and `HW2_214034621.zip` is rebuilt/committed. Final verification: `check_submission.py HW2_214034621.zip` VALID (only `[OK]`/`[RESULT]`), `code/align_check.py` PASS, `code/speed_check.py --only all` PASS, forbidden hashes OK for all four protected files.
+- **Code state:** `code/bpe_tokenizer.py` remains pure-`\X`; no tokenizer changes were made. `code/make_report.py` now reports assignment-defined bigrams: full-file adjacent two-word sequence counts from each tokenizer's training file, not BPE merge pairs. `code/make_word_report.py` can generate an editable review DOCX with the same corrected bigram content.
+- **Validation state:** `report_214034621.pdf` is regenerated and `HW2_214034621.zip` is rebuilt/committed. Final verification: `check_submission.py HW2_214034621.zip` VALID (only `[OK]`/`[RESULT]`), `code/align_check.py` PASS, `code/speed_check.py --only all` PASS, forbidden hashes OK for all four protected files. Word review file: `report_214034621_review.docx`.
 
 ## What was just done (most recent first)
 
+- **Report bigram correction (Codex):** Re-read the assignment definition: a bigram is two adjacent words as one token, and the report needs most/least common bigrams in the training set. Patched `code/make_report.py` to stream the full training files (`data/domain_1_train.txt`, `data/domain_2_train.txt`, `data/tok3_mix_d1sample_d2all_seed42.txt`) and count adjacent whitespace-delimited two-word sequences. Replaced the old BPE-merge-pair table with top-5 and least-5 two-word sequences plus counts; wrote audit data to `tuning/report/training_bigram_counts.json`. Added a line that each shipped tokenizer deliberately encodes exactly one checker-defined real bigram token (`,"▁the`) to satisfy the spec while protecting entity-boundary F1. Deepened the tok2/news paragraph with concrete reasons: formal spelling/punctuation stabilizes boundaries and repeated named-entity/title patterns favor vocab 16000. Regenerated `report_214034621.pdf`, rebuilt `HW2_214034621.zip`, reran `check_submission.py`, `align_check.py`, `speed_check.py --only all`, and forbidden hashes (all green). Also generated `report_214034621_review.docx` for editable review; the older `report_214034621.docx` was locked/dirty and was not overwritten.
 - **Phase 6 report + final packaging (Codex):** Fixed `code/build_submission.py` so it no longer overwrites the report with a placeholder. Added `code/make_report.py`, which extracts top/bottom ordered BPE merge bigrams from the shipped tokenizer pickles and metrics from `tuning/results/final_eval.csv` / `tok3_cpu_sweep.csv`, then uses Edge headless to print `report_214034621.pdf`. The report is one A4 page, Arial-styled, single column, and includes author/ID, per-tokenizer deviations, tok1 negative-result story, top/bottom merge bigrams, dev F1/efficiency/speed, hidden-domain rationale/OOV evidence, and model-2 discussion. Rebuilt and committed `HW2_214034621.zip`; verified `check_submission.py` valid, `align_check.py` PASS, `speed_check.py --only all` PASS, and forbidden hashes OK. Updated `.planning/STATE.md`, `.planning/ROADMAP.md`, and `.planning/REQUIREMENTS.md` to mark Phases 4-6 complete.
 - **tok1 FINALIZED + Batch 2 reverted (Claude):** Batch 2 structured pre-tok VM results came back WORSE at every vocab (mix_v6000 0.4264, v8000 0.3906, v10000 0.4128, v12000 0.4000) vs the `\X` `mix_v6000` 0.4780 — the structural lever hurt Twitter NER (fragmenting words at punct/digit boundaries removed useful subword context). Per the pre-agreed rule, **reverted** `bpe_tokenizer.py` to pure-`\X` (`git checkout d0e3b8e -- code/bpe_tokenizer.py`; gates re-verified GREEN) and **finalized tok1 = balanced mix @ vocab 6000 (0.4780)**. Reproduced via the unedited generator (`generate_tokenizers.py --vocab_size 6000 --train_files_1 tok3_mix_d1sample_d2all_seed42.txt`), byte-verified `tokenizer_1.pkl`==`ef7db8c2` (the VM-scored mix_v6000), copied to `trained_tokenizers/`. Updated `code/measure_final.py` (tok1 entry -> mix@6000/0.4780) + re-ran -> `final_eval.csv`; updated `train_commands.txt`. Rebuilt zip; `check_submission` VALID; forbidden hashes OK; align/speed green. tok2/tok3 untouched. (Negative result `3d4713b` + tok1_b2 candidates kept in history for the report.)
 - **tok1 Batch 2 structured-pretokenization VM sweep (Codex):** pulled `origin/master`, ran `uv sync`, confirmed torch CUDA **True**, created `tuning/logs/tok1_b2/` + `tuning/results/`, and evaluated all four structured balanced-mix tok1 candidates on Twitter `train_1/dev_1` with unchanged NER hyperparameters. Wrote `tuning/results/tok1_b2_f1.csv` and logs under `tuning/logs/tok1_b2/`: mix_v6000 **0.4264 / 1.0832 min**, mix_v8000 **0.3906 / 0.8805 min**, mix_v10000 **0.4128 / 0.8700 min**, mix_v12000 **0.4000 / 0.8790 min**. Structured Batch 2 did not beat the prior `\X` `mix_v6000` score **0.4780**.
@@ -50,6 +51,7 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 - `report_214034621.pdf`
 - `HW2_214034621.zip`
+- `report_214034621_review.docx` (editable review copy)
 
 Completed final verification on 2026-06-27:
 - `py -m uv run python check_submission.py HW2_214034621.zip` -> VALID (only `[OK]`/`[RESULT]`)
@@ -89,7 +91,7 @@ If resuming only to submit, use the committed `HW2_214034621.zip`.
 - Research: `.planning/research/{STACK,ARCHITECTURE,PITFALLS,FEATURES,SUMMARY}.md`
 - Phase 1 / Phase 2 artifacts: `.planning/phases/01-*/`, `.planning/phases/02-*/`
 - Tokenizer: `code/bpe_tokenizer.py`; gates: `code/align_check.py`, `code/speed_check.py`; harness to extend: `code/test_tokenizer.py`
-- Report/package: `code/make_report.py`, `report_214034621.pdf`, `HW2_214034621.zip`, `tuning/report/report_214034621.html`
+- Report/package: `code/make_report.py`, `code/make_word_report.py`, `report_214034621.pdf`, `report_214034621_review.docx`, `HW2_214034621.zip`, `tuning/report/report_214034621.html`, `tuning/report/training_bigram_counts.json`
 
 ## Continuation prompts
 
