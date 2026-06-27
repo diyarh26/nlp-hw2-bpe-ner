@@ -107,6 +107,16 @@ def format_bigram_list(items: list[tuple[str, int]]) -> str:
     return "; ".join(f"{bigram} ({count})" for bigram, count in items)
 
 
+def format_bigram_cell(summary: dict[str, object]) -> str:
+    return "Top: " + format_bigram_list(summary["top5"]) + " | Least: " + format_bigram_list(summary["bottom5"])
+
+
+def display_train_file(index: int, summary: dict[str, object]) -> str:
+    if index == 3:
+        return "tok3_mix.txt"
+    return Path(str(summary["file"])).name
+
+
 def rpr(text: str, bold: bool = False) -> str:
     props = (
         "<w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/>"
@@ -172,21 +182,21 @@ def styles_xml() -> str:
   <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
     <w:name w:val="Normal"/>
     <w:qFormat/>
-    <w:pPr><w:spacing w:after="40" w:line="276" w:lineRule="auto"/></w:pPr>
+    <w:pPr><w:spacing w:after="24" w:line="276" w:lineRule="auto"/></w:pPr>
     <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr>
   </w:style>
   <w:style w:type="paragraph" w:styleId="TitleText">
     <w:name w:val="TitleText"/>
     <w:basedOn w:val="Normal"/>
     <w:qFormat/>
-    <w:pPr><w:spacing w:after="50" w:line="276" w:lineRule="auto"/></w:pPr>
-    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:b/><w:bCs/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr>
+    <w:pPr><w:spacing w:after="24" w:line="276" w:lineRule="auto"/></w:pPr>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:b/><w:bCs/><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr>
   </w:style>
   <w:style w:type="paragraph" w:styleId="Heading">
     <w:name w:val="Heading"/>
     <w:basedOn w:val="Normal"/>
     <w:qFormat/>
-    <w:pPr><w:spacing w:before="50" w:after="20" w:line="276" w:lineRule="auto"/></w:pPr>
+    <w:pPr><w:spacing w:before="24" w:after="12" w:line="276" w:lineRule="auto"/></w:pPr>
     <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:b/><w:bCs/><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr>
   </w:style>
   <w:style w:type="paragraph" w:styleId="ListParagraph">
@@ -216,9 +226,8 @@ def document_xml() -> str:
         bigram_rows.append(
             [
                 f"tok{index}",
-                str(summary["file"]),
-                format_bigram_list(summary["top5"]),
-                format_bigram_list(summary["bottom5"]),
+                display_train_file(index, summary),
+                format_bigram_cell(summary),
             ]
         )
 
@@ -227,19 +236,22 @@ def document_xml() -> str:
     body.append(para(f"HW2 BPE Tokenizer Report - {AUTHOR}, {STUDENT_ID}", bold=True, style="TitleText"))
     body.append(
         para(
-            "Submission: HW2_214034621.zip. Goal: improve tokenizer efficiency and speed while preserving NER F1 under the fixed course model."
+            "Submission: HW2_214034621.zip. Goal: improve tokenizer efficiency and speed while preserving NER F1 under the fixed course model.",
+            after=20,
         )
     )
     body.append(para("Creativity, implementation, and originality", bold=True, style="Heading"))
     body.append(
         para(
-            "I implemented character-up BPE with a learned mergeable space marker (SP), allowed useful cross-word merges but capped tokens at one internal space, added byte fallback so encode never emits UNK, and kept decode length-faithful for the NER aligner. The speed work uses merge ranks, an encode cache, and weighted incremental training with local pair-count updates; no NER hyperparameters or forbidden files were changed."
+            "I implemented character-up BPE with a learned mergeable space marker, allowed useful cross-word merges but capped tokens at one internal space, added byte fallback so encode never emits UNK, and kept decode length-faithful for the NER aligner. Speed comes from merge ranks, an encode cache, and weighted incremental training with local pair-count updates; no NER hyperparameters or forbidden files were changed.",
+            after=20,
         )
     )
     body.append(para("Experiments and parameter selection", bold=True, style="Heading"))
     body.append(
         para(
-            "tok1: balanced domain mix at vocab 6000 was selected for Twitter because it reached F1 0.4780, +0.043 over the previous domain-1-only vocab-8000 tokenizer. Larger mix vocabs dropped, and a structured pre-tokenization trial was reverted after worse F1 at every vocab. tok2: vocab 16000 was selected for news because it kept high F1 (0.9557) while giving the best compression/speed tradeoff. tok3: balanced deduped domain-1/domain-2 mix at vocab 8000 was selected for hidden-domain robustness: medium vocabulary, no UNK, and less single-domain bias."
+            "tok1: balanced domain mix, vocab 6000, reached Twitter F1 0.4780 (+0.043 over domain-1-only vocab 8000); larger mix vocabs fell and structured pre-tokenization was reverted. tok2: news vocab 16000 kept high F1 (0.9557) with the best compression/speed tradeoff. tok3: balanced deduped domain-1/domain-2 mix, vocab 8000, gives hidden-domain robustness through medium vocabulary, no UNK, and less single-domain bias.",
+            after=20,
         )
     )
     body.append(para("Validation and measured results", bold=True, style="Heading"))
@@ -254,31 +266,34 @@ def document_xml() -> str:
         para(
             "Validation: check_submission.py passed with required structure and a bigram token; align_check.py passed; speed_check.py --only all passed; forbidden-file hashes matched. Reproducibility is recorded in train_commands.txt. Hidden-domain evidence for tok3: "
             + hidden_oov_text()
-            + "."
+            + ".",
+            after=20,
         )
     )
     body.append(para("BPE training bigrams", bold=True, style="Heading"))
     body.append(
         para(
-            "The assignment defines a bigram as two adjacent words as one token. The table therefore reports full-file counts of adjacent whitespace-delimited two-word sequences in each tokenizer's training file, not BPE merge pairs."
+            "The assignment defines a bigram as two adjacent words as one token; this table reports full-file counts of adjacent whitespace-delimited two-word sequences in each tokenizer's training file, not BPE merge pairs.",
+            after=20,
         )
     )
     body.append(
         table(
-            ["tok", "train file", "top 5 two-word sequences", "least 5 two-word sequences"],
+            ["tok", "train file", "most/least common two-word sequences with full-file counts"],
             bigram_rows,
-            [600, 1600, 3400, 3426],
+            [600, 1900, 6526],
         )
     )
     body.append(
         para(
-            "Each shipped tokenizer deliberately encodes exactly one checker-defined real bigram token, internally ,\"▁the, enough to satisfy the required bigram behavior while protecting entity-boundary F1 from aggressive cross-word merging."
+            "Each shipped tokenizer deliberately encodes exactly one checker-defined real bigram token, internally ,\"▁the, enough to satisfy the required bigram behavior while protecting entity-boundary F1 from aggressive cross-word merging.",
+            after=20,
         )
     )
     body.append(para("Hidden domain and model-2 evaluation", bold=True, style="Heading"))
     body.append(
         para(
-            "For the hidden tokenizer, I avoided a pure news or pure Twitter vocabulary and used a balanced deduped mix; this should generalize better to an unseen domain because byte fallback covers new strings and the medium vocab avoids overfitting common news phrases. Model 2 performs best because news text is cleaner and more regular: formal spelling/punctuation makes subword boundaries stable, and repeated named-entity/title patterns let vocab 16000 compress frequent fragments without fragmenting labels. It improves compression/speed while staying within 0.0053 F1 of the smaller best-F1 news candidate."
+            "For hidden-domain use, tok3 uses a balanced deduped mix; byte fallback covers unseen strings and medium vocab reduces phrase overfit. Model 2 benefits from clean news style: formal punctuation stabilizes boundaries, and repeated entity/title patterns let vocab 16000 compress fragments without label damage; it stays within 0.0053 F1 of best news F1 while faster."
         )
     )
 
