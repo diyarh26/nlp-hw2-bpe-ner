@@ -19,7 +19,25 @@ from base_tokenizer import BaseTokenizer
 
 SPACE_TOKEN = "▁"
 BYTE_PREFIX = ""
-PRETOKEN_PATTERN = r"\X"
+# Batch 2 — structured (GPT-2-style, Unicode-aware) pre-tokenization. Used ONLY at
+# TRAIN time (in `_text_to_chunks`) to bound which adjacent pairs may be counted/
+# merged: letters, digits, and punctuation/symbol runs form separate chunks, and a
+# leading space binds to the following piece (mapped to the ▁ marker). Splitting at
+# letter/digit/punct boundaries keeps merges inside coherent units so word-initial
+# subtokens stay consistent for the NER first-subtoken labeller. encode/decode are
+# unchanged: encode still applies the learned merges greedily over the flat symbol
+# sequence, so only merges training actually learned (within-category, plus the one
+# forced cross-word bigram) can fire — keeping the slow/fast encode oracle and
+# length-faithful decode green by construction. Stored as a string (pickle-safe),
+# compiled in `_init_runtime_state`.
+PRETOKEN_PATTERN = (
+    r"'(?:[sdmt]|ll|ve|re)|"  # common English contractions
+    r" ?\p{L}+|"               # optional leading space + a run of letters
+    r" ?\p{N}+|"               # optional leading space + a run of digits
+    r" ?[^\s\p{L}\p{N}]+|"     # optional leading space + punctuation/symbols (@,#,emoji,...)
+    r"\s+(?!\S)|"              # trailing whitespace run
+    r"\s+"                      # any remaining whitespace run
+)
 FORCED_BIGRAM_SAMPLE_LINES = 4000
 
 
@@ -292,17 +310,16 @@ class BPETokenizer(BaseTokenizer):
         return [self.space_token if char == " " else char for char in text]
 
     def _text_to_chunks(self, text: str) -> List[List[str]]:
-        symbols = self._text_to_train_symbols(text)
+        """Split text into pre-token chunks via the structured regex, each chunk a
+        list of char symbols (a literal space -> the ▁ marker). The regex tiles the
+        whole string, so concatenating the chunks reconstructs the text (no symbol
+        dropped); it only bounds which adjacent pairs training may count/merge."""
         chunks: List[List[str]] = []
-        current: List[str] = []
-        for symbol in symbols:
-            if symbol == self.space_token and current:
-                chunks.append(current)
-                current = [symbol]
-            else:
-                current.append(symbol)
-        if current:
-            chunks.append(current)
+        for match in self._pretoken_regex.finditer(text):
+            piece = match.group()
+            if not piece:
+                continue
+            chunks.append([self.space_token if char == " " else char for char in piece])
         return chunks
 
     def _text_to_encode_symbols(self, text: str) -> List[str]:

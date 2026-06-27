@@ -1,0 +1,5 @@
+variant,vocab_size,train_data,sha256,candidate_path,eval_file,tokens_per_char,tokens_per_sentence,tokens_per_second_cold,cold_pass_seconds,dev_chars,dev_tokens,dev_sentences,reconstruction_rate,unk_count,bigram_token_count,trigram_token_count
+mix_v6000,6000,balanced-mix,deb02642b37cc235c8a8200d26c5fb59998879a2d0e7b752b333e37da1475058,tuning\tok1_b2\mix_v6000.pkl,data\domain_1_dev.txt,0.32004013,23.491455,35268.204687,106.601485,11747411,3759643,160043,1.00000000,0,1,0
+mix_v8000,8000,balanced-mix,052830bb946aa39f3e5205a7ecc6d98f72da5f4331b852978bfbcf6c3d4987b3,tuning\tok1_b2\mix_v8000.pkl,data\domain_1_dev.txt,0.30826758,22.627331,33705.790133,107.439879,11747411,3621346,160043,1.00000000,0,1,0
+mix_v10000,10000,balanced-mix,5d6d9d10680fabbd03813b9f461067fb8149db3f0daff0921c45923802cac360,tuning\tok1_b2\mix_v10000.pkl,data\domain_1_dev.txt,0.30022819,22.037227,31216.789796,112.980996,11747411,3526904,160043,1.00000000,0,1,0
+mix_v12000,12000,balanced-mix,28be444732a8ab955fba4ed756ae3430fa1edee2190b05a98e6e0d908a1e5db0,tuning\tok1_b2\mix_v12000.pkl,data\domain_1_dev.txt,0.29422738,21.596758,29463.629777,117.311072,11747411,3456410,160043,1.00000000,0,1,0
