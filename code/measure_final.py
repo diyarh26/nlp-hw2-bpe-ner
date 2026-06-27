@@ -39,16 +39,19 @@ from test_tokenizer import load_texts, measure_encoding_speed, test_reconstructi
 # fails loudly instead of attaching a stale F1.
 FINAL = [
     {
+        # tok1 finalized on the balanced mix @ vocab 6000 (tok1-opt Batch 1: best
+        # Twitter F1 0.4780, +0.043 over the prior vocab-8000 domain-1-only tok1).
+        # Structured pre-tok (Batch 2) was tried and reverted (it hurt F1).
         "index": 1,
-        "vocab_size": 8000,
+        "vocab_size": 6000,
         "shipping": "trained_tokenizers/tokenizer_1.pkl",
-        "candidate": "tuning/tokenizers/tokenizer_1_vocab8000.pkl",
+        "candidate": "tuning/tok1_sweep/mix_v6000.pkl",
         "evals": [
             {
                 "split": "domain_1_dev",
                 "dev_file": "data/domain_1_dev.txt",
-                "vm_f1": 0.4352,
-                "vm_f1_source": "tuning/results/vm_f1_results.csv",
+                "vm_f1": 0.4780,
+                "vm_f1_source": "tuning/results/tok1_sweep_f1.csv",
             },
         ],
     },
