@@ -16,6 +16,16 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
+- **Last updated by:** Codex - 2026-06-27 (OPTIMIZATION ROUND complete: Lever 1 speed win shipped; Lever 2 sharpened, still declined; final zip rebuilt + fully revalidated).
+- **Phase:** Final optimization/packaging round on top of the complete Phase-6 submission. Submission is ready unless the user wants the optional VM F1 confirmation or editable DOCX refresh.
+- **Final tokenizers (UNCHANGED, byte-identical to the finalized submission):** tok1 = balanced mix @ vocab 6000 (**0.4780**, `ef7db8c2382f3c7d7a48828d8ae1da5007ff0c65d746fa3a248fae37d673db14`), tok2 = news vocab 16000 (**0.9557**, `ae7c16f4871043256fd115b27ca399ffc99e5fa564a4fae7230c34da2bb52177`), tok3 = balanced dedup mix @ vocab 8000 (**0.4217/0.9587**, `f03aac21afaa350e5ac5b09ffe501b7400524dc558c18f7b9fc42aed2254e6d9`). All three reproduce byte-identical via the unedited generator with the new code.
+- **Lever 1:** O(n log n) heap/list encoder remains byte-identical to the slow oracle + frozen greedy reference; encode_bench after final rebuild: tok1 1,235,565 chars/s, tok2 1,148,600 chars/s, tok3 1,173,874 chars/s.
+- **Lever 2:** The gated collocation study path now mines corpus-wide whole alphabetic word pairs only. K=40 learned clean pairs like `I am`, `How To`, `I have`, `Donald Trump`, `This is`, but cut tokens/sentence only **0.08%** (22.5193 -> 22.5008) and still risks named-entity/context joins. **Ship K=0**; final pkls are unchanged.
+- **Report/package:** `report_214034621.pdf` regenerated from `code/make_report.py`, visually inspected via Edge screenshot, and still exactly **1 A4 page**. `HW2_214034621.zip` rebuilt with PDF + final tokenizers + `code/bpe_tokenizer.py` + `code/make_tok3_mix.py` + `train_commands.txt`; no DOCX in the zip.
+- **Final validation:** `check_submission.py HW2_214034621.zip` VALID; `align_check.py` PASS; `speed_check.py --only all` OVERALL PASS; `encode_bench.py --lines 4000 --repeat 3` OVERALL PASS; forbidden hashes OK; PDF page count = 1; clean-room reproduce all 3 pkls byte-identical via unedited `generate_tokenizers.py` + regenerated mix.
+
+Older pre-Codex status below is retained for history only; ignore any stale "must still" validation notes in it:
+
 - **Last updated by:** Claude - 2026-06-27 (OPTIMIZATION ROUND: Lever 1 speed win shipped; Lever 2 studied + declined). **Handing baton to Codex with a fresh limit — see NEXT ACTION for the full agenda.**
 - **Phase:** Optimization round on top of the complete Phase-6 submission.
 - **Tokenizers UNCHANGED (byte-identical to the finalized submission):** tok1 = balanced mix @ vocab 6000 (**0.4780**, `ef7db8c2…`), tok2 = news vocab 16000 (**0.9557**, `ae7c16f4…`), tok3 = balanced dedup mix @ vocab 8000 (**0.4217/0.9587**, `f03aac21…`). All three reproduce byte-identical via the unedited generator with the new code. Final F1/efficiency in `tuning/results/final_eval.csv`.
@@ -26,6 +36,10 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## What was just done (most recent first)
 
+- **Optimization round finalized (Codex):** Rebuilt `HW2_214034621.zip`, reran the full official checker (VALID), `align_check.py` PASS, `speed_check.py --only all` OVERALL PASS, `encode_bench.py --lines 4000 --repeat 3` OVERALL PASS, forbidden hashes OK, PDF page count = 1, and clean-room reproduced all three pkls byte-identical via the unedited generator (`tok1 ef7db8c2382f...`, `tok2 ae7c16f48710...`, `tok3 f03aac21afaa...`). Created empty validation commit `c758e6a`, VM F1 runbook commit `3786701`, alpha-collocation study commit `5f136d6`, and report/zip polish commit `3bcb6b9`.
+- **Lever 2 study sharpened (Codex):** Changed the gated `EXTRA_CROSS_WORD_BIGRAMS > 0` study path to corpus-wide whole alphabetic word-pair mining while preserving the default K=0 byte-identical training path. Re-ran `code/make_bigram_sweep.py`: K=0 MATCH for shipped tok1; K=40 learned clean pairs (`I am`, `How To`, `I have`, `Donald Trump`, `This is`) but improved tok/sent by only 0.08%, so K=0 remains the shipped choice.
+- **Report polished (Codex):** Updated `code/make_report.py` to pull the Lever-2 number from `bigram_sweep_cpu.csv`, added encode_bench throughput, removed brittle marker-glyph wording, regenerated `report_214034621.pdf` and `tuning/report/report_214034621.html`, visually checked the one-page layout with Edge screenshot, rebuilt the zip, and reran the hard gates. Did not touch `report_214034621.docx`.
+- **VM confirmation relay prepared (Codex):** Added `.planning/phases/05-vm-ner-evaluation-measurement/LEVER1-F1-CONFIRM-VM-RUNBOOK.md` with paste-ready Tesla M60 commands to write `tuning/results/lever1_f1_confirm.csv` if the user wants optional F1 re-score evidence.
 - **User PDF packaged (Codex):** Rebuilt `HW2_214034621.zip` with the current `report_214034621.pdf` plus the existing trained tokenizers, `code/bpe_tokenizer.py`, `code/make_tok3_mix.py`, and `train_commands.txt`. Verified the archive contains no `.docx`. Re-ran `check_submission.py HW2_214034621.zip`; it completed successfully with `[OK]`/`[RESULT]` messages and the final valid-submission note.
 - **Polished Word report (Codex):** Reworked `code/make_word_report.py` to generate `report_214034621.docx` as a strict one-page A4 report: Arial 10pt, 1.15 line spacing, 2.54cm margins, single column. The DOCX includes the corrected full-file adjacent two-word bigram counts, the deliberate `,"▁the` real-bigram note, F1/efficiency/speed table, hidden-domain rationale, and expanded model-2 discussion. `python-docx` was not installed in the locked uv environment, so the source continues to use deterministic no-dependency OOXML generation. Verified with Microsoft Word COM: page count = 1. Also checked the DOCX XML page/font/spacing settings and confirmed `HW2_214034621.zip` contains no `.docx`.
 - **Reproducibility packaging fix (Codex):** Patched `code/build_submission.py` so `HW2_214034621.zip` includes `code/make_tok3_mix.py` in addition to `code/bpe_tokenizer.py`; `make_tok3_mix.py` imports only stdlib modules, so no extra non-forbidden project module was required. Rebuilt the zip and verified `code/` contains `bpe_tokenizer.py` and `make_tok3_mix.py` only. In a clean temp extraction, ran the relevant `train_commands.txt` sequence (`make_tok3_mix.py`, then `generate_tokenizers.py --train_files_1`, then `generate_tokenizers.py --train_files_3`) and byte-compared regenerated artifacts against the shipped zip: tok1 `ef7db8c2382f3c7d7a48828d8ae1da5007ff0c65d746fa3a248fae37d673db14` matched exactly; tok3 `f03aac21afaa350e5ac5b09ffe501b7400524dc558c18f7b9fc42aed2254e6d9` matched exactly. Re-ran `check_submission.py HW2_214034621.zip`, `code/align_check.py`, `code/speed_check.py --only all`, and forbidden-file hashes; all passed.
@@ -50,7 +64,15 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 - **02-01:** `code/speed_check.py` oracle/benchmark harness (encode replay oracle, cache probe, train-vs-full-recount probe).
 - **Phase 1 (complete, 01-01..01-04):** scaffold extracted; `uv` env; `align_check.py` (VP1-4,6); char-up BPE with `▁` marker, capped bigram, byte fallback, length-faithful decode; pickle hardening; first submittable zip; local CPU domain-1 NER best F1 was **0.4218** (with the old capped tokenizer).
 
-## NEXT ACTION (Codex — fresh limit, full agenda)
+## NEXT ACTION
+
+Submission is ready. The committed `HW2_214034621.zip` has passed the full hard gate after the final report/code changes.
+
+1. **Submit now:** use `HW2_214034621.zip`.
+2. **Optional VM confirmation:** if the user wants belt-and-suspenders F1 evidence, paste the runbook in `.planning/phases/05-vm-ner-evaluation-measurement/LEVER1-F1-CONFIRM-VM-RUNBOOK.md` on the Tesla M60 VM. Expected rows: tok1/dev1 0.4780, tok2/dev2 0.9557, tok3/dev1 0.4217, tok3/dev2 0.9587. This is optional because encode output is already byte-identical.
+3. **Optional editable DOCX:** only if the user explicitly asks, refresh `report_214034621.docx` to match the PDF narrative. Do not overwrite it or the Word lock file without permission; DOCX is not part of the zip.
+
+## Completed optimization agenda (historical)
 
 Claude shipped Lever 1 (committed `8cd1c55`, pushed) and updated the report + Lever 2 code in the working tree. **First `git pull`.** Claude will have committed the working-tree changes before handing off — confirm `git log` shows the Lever-2/report commit and a rebuilt-zip commit; if the tree is dirty, finish staging per the commit list at the bottom. Then work this agenda top-to-bottom, committing each block.
 
@@ -94,6 +116,7 @@ If resuming only to submit RIGHT NOW, the committed `HW2_214034621.zip` after bl
 - **uv PATH:** run Python via `py -m uv run python ...`.
 - **Checker encoding:** on Windows set `$env:PYTHONIOENCODING='utf-8'` before `check_submission.py` (otherwise printing `▁` can fail even when the submission is valid).
 - **Deliverables:** Final `HW2_214034621.zip` is force-added and committed even though `HW2_*.zip` is ignored. `trained_tokenizers/` remains gitignored/local, but the committed zip contains the final pickles.
+- **Dirty local file:** `report_214034621.docx` still shows modified from before this optimization round. Codex deliberately did not touch or commit it because the user asked not to clobber the DOCX/Word lock file without permission; it is not included in `HW2_214034621.zip`.
 - **GSD helper:** local `gsd-tools.cjs` may fail (missing package metadata); state/roadmap updates can be done by hand.
 - **Line endings:** Git reports LF->CRLF warnings on Windows; no functional impact.
 
