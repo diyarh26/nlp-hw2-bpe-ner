@@ -22,6 +22,15 @@ BYTE_PREFIX = ""
 PRETOKEN_PATTERN = r"\X"
 FORCED_BIGRAM_SAMPLE_LINES = 4000
 
+# Lever 2 -- controlled cross-word bigrams. With 0 (the default) training is
+# byte-identical to the subword-only baseline plus the single mandatory forced
+# bigram. With N > 0 the last N vocab slots are filled by the N most frequent
+# legal cross-word collocations mined from the corpus (capped at one internal
+# space, so never a 3-word token). It is a module constant because the unedited
+# generate_tokenizers.py forwards only --vocab_size; each tokenizer still mines
+# its own collocations from its own training text.
+EXTRA_CROSS_WORD_BIGRAMS = 0
+
 
 def _pair_sort_key(item: Tuple[Tuple[str, str], int]) -> Tuple[int, str, str]:
     pair, count = item
@@ -78,13 +87,32 @@ class BPETokenizer(BaseTokenizer):
         for token in sorted(base_tokens):
             self._add_token(token)
 
-        self._train_merges(sequences, weights, texts)
+        if EXTRA_CROSS_WORD_BIGRAMS <= 0:
+            self._train_merges(sequences, weights, texts)
+            return
+
+        # Lever 2: reserve the last N slots for cross-word collocations. Subword
+        # merges run to vocab_size - N with no forced bigram (the collocation
+        # phase supplies the bigrams), then the N most frequent legal
+        # collocations are merged. A single forced bigram still backstops the
+        # >=1-bigram guarantee if the corpus yielded no legal collocation.
+        subword_target = max(len(self.token_to_id), self.vocab_size - EXTRA_CROSS_WORD_BIGRAMS)
+        self._train_merges(
+            sequences, weights, texts, target=subword_target, force_bigram=False
+        )
+        self._add_cross_word_collocations(texts, EXTRA_CROSS_WORD_BIGRAMS)
+        if not self._has_bigram_token() and len(self.token_to_id) < self.vocab_size:
+            pair = self._forced_cross_word_bigram_pair(texts)
+            if pair is not None:
+                self._record_merge(pair)
 
     def _train_merges(
         self,
         sequences: Sequence[Sequence[str]],
         weights: Sequence[int],
         texts: Sequence[str],
+        target: int | None = None,
+        force_bigram: bool = True,
     ) -> None:
         """Efficient incremental BPE merge loop (identical result to the oracle).
 
@@ -153,9 +181,14 @@ class BPETokenizer(BaseTokenizer):
                     members.add(chunk_id)
             changed.add(key)
 
-        target = self.vocab_size
+        if target is None:
+            target = self.vocab_size
         while len(self.token_to_id) < target:
-            if len(self.token_to_id) == target - 1 and not self._has_bigram_token():
+            if (
+                force_bigram
+                and len(self.token_to_id) == target - 1
+                and not self._has_bigram_token()
+            ):
                 pair = self._forced_cross_word_bigram_pair(texts)
                 if pair is not None:
                     self._record_merge(pair)
@@ -218,10 +251,27 @@ class BPETokenizer(BaseTokenizer):
                 if count > 0:
                     heapq.heappush(heap, (-count, local_to_str[key[0]], local_to_str[key[1]], key))
 
-        if len(self.token_to_id) < target and not self._has_bigram_token():
+        if force_bigram and len(self.token_to_id) < target and not self._has_bigram_token():
             pair = self._forced_cross_word_bigram_pair(texts)
             if pair is not None:
                 self._record_merge(pair)
+
+    def _add_cross_word_collocations(self, texts: Sequence[str], max_count: int) -> None:
+        """Append up to ``max_count`` cross-word collocation merges by frequency.
+
+        Greedy by corpus frequency: each pass re-encodes a fixed frequent-line
+        sample with the merges learned so far and merges the single most frequent
+        legal one-internal-space pair not already a merge, so the next pass sees
+        that collocation already fused and finds the next one. The one-space cap
+        (``_legal_merge``) keeps every token to at most two words.
+        """
+        sample = self._frequent_line_sample(texts)
+        while max_count > 0 and len(self.token_to_id) < self.vocab_size:
+            pair = self._best_cross_word_pair(sample)
+            if pair is None:
+                break
+            self._record_merge(pair)
+            max_count -= 1
 
     def encode(self, text: str) -> List[int]:
         """Convert a text string into token IDs, never emitting [UNK]."""
@@ -434,10 +484,12 @@ class BPETokenizer(BaseTokenizer):
                 return True
         return False
 
-    def _forced_cross_word_bigram_pair(self, texts: Sequence[str]) -> Tuple[str, str] | None:
+    def _frequent_line_sample(self, texts: Sequence[str]) -> List[str]:
         line_counts = Counter(text for text in texts if text)
         ordered = sorted(line_counts.items(), key=lambda item: (-item[1], item[0]))
-        sample = [line for line, _count in ordered[:FORCED_BIGRAM_SAMPLE_LINES]]
+        return [line for line, _count in ordered[:FORCED_BIGRAM_SAMPLE_LINES]]
+
+    def _best_cross_word_pair(self, sample: Sequence[str]) -> Tuple[str, str] | None:
         counts: Counter = Counter()
         for line in sample:
             symbols = self._apply_ranked_merges(self._text_to_encode_symbols(line))
@@ -453,6 +505,9 @@ class BPETokenizer(BaseTokenizer):
         if not counts:
             return None
         return min(counts.items(), key=_pair_sort_key)[0]
+
+    def _forced_cross_word_bigram_pair(self, texts: Sequence[str]) -> Tuple[str, str] | None:
+        return self._best_cross_word_pair(self._frequent_line_sample(texts))
 
     def _non_special_tokens(self) -> Iterable[str]:
         for token in self.token_to_id:

@@ -1,0 +1,5 @@
+k,vocab_size,tokens_per_char,tokens_per_sentence,dev_tokens,dev_sentences,bigram_token_count,trigram_token_count,unk_count,reconstruction_rate,control,sha256,pkl
+0,6000,0.3067125216738286,22.5193375,3603094,160000,1,0,0,1.0,MATCH,ef7db8c2382f3c7d7a48828d8ae1da5007ff0c65d746fa3a248fae37d673db14,tuning\bigram_sweep\tok1_mix_v6000_k0.pkl
+8,6000,0.3061086466073568,22.475,3596000,160000,8,0,0,1.0,,c92ef4e40150b073cbcb56db2ce78ca6860146dda9f7151d402ce8f6eed20374,tuning\bigram_sweep\tok1_mix_v6000_k8.pkl
+20,6000,0.30617334142699576,22.47975,3596760,160000,20,0,0,1.0,,c8c9a01b4ccb4e522723d2d2941a1e42e9eefb312abfce5eb6b43a029e9c58f9,tuning\bigram_sweep\tok1_mix_v6000_k20.pkl
+40,6000,0.30612686330657096,22.4763375,3596214,160000,40,0,0,1.0,,860517747e9cb077a91027691938573b24fbd14b7bc08c52b4e62fe8bfa7eb03,tuning\bigram_sweep\tok1_mix_v6000_k40.pkl
