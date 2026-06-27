@@ -361,27 +361,71 @@ class BPETokenizer(BaseTokenizer):
         return output
 
     def _apply_ranked_merges(self, symbols: List[str]) -> List[str]:
-        while True:
-            best_rank = None
-            best_index = None
-            best_pair = None
-            for index in range(len(symbols) - 1):
-                pair = (symbols[index], symbols[index + 1])
-                rank = self.merge_ranks.get(pair)
-                if rank is None or not self._legal_merge(pair[0], pair[1]):
-                    continue
-                if best_rank is None or rank < best_rank:
-                    best_rank = rank
-                    best_index = index
-                    best_pair = pair
-            if best_pair is None or best_index is None:
-                break
-            symbols = (
-                symbols[:best_index]
-                + [best_pair[0] + best_pair[1]]
-                + symbols[best_index + 2 :]
-            )
-        return symbols
+        """Greedy lowest-rank BPE encode via a lazy heap + intrusive linked list.
+
+        Byte-identical to the original O(n^2) loop (repeatedly scan for the
+        global lowest-rank adjacent pair and merge its leftmost occurrence -- the
+        tiktoken ``_educational.py`` rule), but O(n log n): a merge only re-touches
+        the two pairs at its own site instead of forcing a full rescan. The heap
+        key ``(rank, left)`` reproduces the original tie-break exactly because
+        ``rank`` is unique per pair (so equal ranks are the *same* pair) and
+        ``left`` is the merged span's original index, which stays in left-to-right
+        order under merging -- the smallest live ``left`` is always the leftmost
+        occurrence. Popped entries are validated against the live list (adjacency
+        + rank) so stale duplicates are skipped, never mis-merged. Every pair in
+        ``merge_ranks`` is legal by construction, so no ``_legal_merge`` recheck
+        is needed here.
+        """
+        n = len(symbols)
+        if n < 2:
+            return symbols
+
+        merge_ranks = self.merge_ranks
+        syms = list(symbols)
+        prev = list(range(-1, n - 1))      # prev[i] = i - 1; prev[0] = -1
+        nxt = list(range(1, n + 1))
+        nxt[n - 1] = -1                      # nxt[last] = -1 (no right neighbour)
+
+        heap: List[Tuple[int, int]] = []
+        for i in range(n - 1):
+            rank = merge_ranks.get((syms[i], syms[i + 1]))
+            if rank is not None:
+                heap.append((rank, i))
+        heapq.heapify(heap)
+
+        while heap:
+            rank, left = heapq.heappop(heap)
+            right = nxt[left]
+            # Liveness: ``left`` must still start a live pair of exactly this rank.
+            if right == -1 or prev[right] != left:
+                continue
+            if merge_ranks.get((syms[left], syms[right])) != rank:
+                continue
+
+            # Merge ``right`` into ``left`` (keep ``left``'s index = the span's
+            # original leftmost index) and splice ``right`` out of the list.
+            syms[left] += syms[right]
+            new_right = nxt[right]
+            nxt[left] = new_right
+            if new_right != -1:
+                prev[new_right] = left
+
+            left_neighbor = prev[left]
+            if left_neighbor != -1:
+                r = merge_ranks.get((syms[left_neighbor], syms[left]))
+                if r is not None:
+                    heapq.heappush(heap, (r, left_neighbor))
+            if new_right != -1:
+                r = merge_ranks.get((syms[left], syms[new_right]))
+                if r is not None:
+                    heapq.heappush(heap, (r, left))
+
+        out: List[str] = []
+        i = 0  # index 0 is never a right-merged node, so it is always the head
+        while i != -1:
+            out.append(syms[i])
+            i = nxt[i]
+        return out
 
     def _has_bigram_token(self) -> bool:
         for token in self._non_special_tokens():
