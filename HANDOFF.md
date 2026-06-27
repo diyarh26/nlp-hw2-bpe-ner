@@ -16,14 +16,15 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Claude - 2026-06-27 (tok1 FINALIZED on mix_v6000 0.4780; all 3 tokenizers final + submission valid; handing to Codex)
-- **Phase:** 4 of 6 complete; **Phase 5 essentially done** (all 3 tokenizers final, measured, submission checker-valid) — only bookkeeping + Phase 6 report remain.
-- **Phase status:** **tok1 optimization COMPLETE.** Batch 1/1.5 plateaued at `mix_v6000`=**0.4780**; Batch 2 (structured pre-tok) was tried and **LOST** (best 0.4264, worse at every vocab) -> **reverted to `\X`**. Final tok1 = balanced mix @ vocab 6000 (**0.4780**, +0.043 over the old vocab-8000 domain-1 tok1 0.4352). All three finals measured in `tuning/results/final_eval.csv`.
-- **Code state:** `code/bpe_tokenizer.py` back to pure-`\X` (Batch 2 reverted via `git checkout` of the file; the structured-pretok commit `3d4713b` stays in history as the negative-result record). align_check + speed_check --only all GREEN. Helpers: `code/measure_final.py`, `code/make_tok1_sweep.py`.
-- **Validation state:** **Staged finals (NEW tok1):** `tokenizer_1.pkl`=mix@6000 (`ef7db8c2`, F1 **0.4780**, byte-verified == generator `--train_files_1 mix --vocab_size 6000`), `tokenizer_2.pkl`=vocab16000 (`ae7c16f4`, 0.9557), `tokenizer_3.pkl`=mix@8000 (`f03aac21`, 0.4217/0.9587). `build_submission` rebuilt `HW2_214034621.zip`; `check_submission` **VALID** (bigram present, no `[ERROR]`); forbidden hashes all **OK** (verify CRLF-robustly: `tr -d '\r' < .planning/phases/01-*/forbidden_files.sha256 | sha256sum -c -`). align/speed gates green.
+- **Last updated by:** Codex - 2026-06-27 (Phase 6 complete; final report + zip committed)
+- **Phase:** 6 of 6 complete. Submission is finalized.
+- **Phase status:** **COMPLETE.** tok1 = balanced mix @ vocab 6000 (**0.4780**), tok2 = news vocab 16000 (**0.9557**), tok3 = balanced dedup mix @ vocab 8000 (**0.4217/0.9587**). All final measurements are in `tuning/results/final_eval.csv`.
+- **Code state:** `code/bpe_tokenizer.py` remains pure-`\X`; no tokenizer changes were made in Phase 6. `code/build_submission.py` now preserves the existing report instead of overwriting it with a placeholder. `code/make_report.py` generates the one-page report from shipped pickles and final CSVs.
+- **Validation state:** `report_214034621.pdf` is written and `HW2_214034621.zip` is rebuilt/committed. Final verification: `check_submission.py HW2_214034621.zip` VALID (only `[OK]`/`[RESULT]`), `code/align_check.py` PASS, `code/speed_check.py --only all` PASS, forbidden hashes OK for all four protected files.
 
 ## What was just done (most recent first)
 
+- **Phase 6 report + final packaging (Codex):** Fixed `code/build_submission.py` so it no longer overwrites the report with a placeholder. Added `code/make_report.py`, which extracts top/bottom ordered BPE merge bigrams from the shipped tokenizer pickles and metrics from `tuning/results/final_eval.csv` / `tok3_cpu_sweep.csv`, then uses Edge headless to print `report_214034621.pdf`. The report is one A4 page, Arial-styled, single column, and includes author/ID, per-tokenizer deviations, tok1 negative-result story, top/bottom merge bigrams, dev F1/efficiency/speed, hidden-domain rationale/OOV evidence, and model-2 discussion. Rebuilt and committed `HW2_214034621.zip`; verified `check_submission.py` valid, `align_check.py` PASS, `speed_check.py --only all` PASS, and forbidden hashes OK. Updated `.planning/STATE.md`, `.planning/ROADMAP.md`, and `.planning/REQUIREMENTS.md` to mark Phases 4-6 complete.
 - **tok1 FINALIZED + Batch 2 reverted (Claude):** Batch 2 structured pre-tok VM results came back WORSE at every vocab (mix_v6000 0.4264, v8000 0.3906, v10000 0.4128, v12000 0.4000) vs the `\X` `mix_v6000` 0.4780 — the structural lever hurt Twitter NER (fragmenting words at punct/digit boundaries removed useful subword context). Per the pre-agreed rule, **reverted** `bpe_tokenizer.py` to pure-`\X` (`git checkout d0e3b8e -- code/bpe_tokenizer.py`; gates re-verified GREEN) and **finalized tok1 = balanced mix @ vocab 6000 (0.4780)**. Reproduced via the unedited generator (`generate_tokenizers.py --vocab_size 6000 --train_files_1 tok3_mix_d1sample_d2all_seed42.txt`), byte-verified `tokenizer_1.pkl`==`ef7db8c2` (the VM-scored mix_v6000), copied to `trained_tokenizers/`. Updated `code/measure_final.py` (tok1 entry -> mix@6000/0.4780) + re-ran -> `final_eval.csv`; updated `train_commands.txt`. Rebuilt zip; `check_submission` VALID; forbidden hashes OK; align/speed green. tok2/tok3 untouched. (Negative result `3d4713b` + tok1_b2 candidates kept in history for the report.)
 - **tok1 Batch 2 structured-pretokenization VM sweep (Codex):** pulled `origin/master`, ran `uv sync`, confirmed torch CUDA **True**, created `tuning/logs/tok1_b2/` + `tuning/results/`, and evaluated all four structured balanced-mix tok1 candidates on Twitter `train_1/dev_1` with unchanged NER hyperparameters. Wrote `tuning/results/tok1_b2_f1.csv` and logs under `tuning/logs/tok1_b2/`: mix_v6000 **0.4264 / 1.0832 min**, mix_v8000 **0.3906 / 0.8805 min**, mix_v10000 **0.4128 / 0.8700 min**, mix_v12000 **0.4000 / 0.8790 min**. Structured Batch 2 did not beat the prior `\X` `mix_v6000` score **0.4780**.
 - **tok1-opt Batch 2 structured pre-tokenization implemented (Claude):** Batch 1.5 confirmed the mix-vocab lever plateaus (peak 0.4780 @ 6000; deterministic — 6000 re-scored to exactly 0.4780; `mix_v8000`==tok3 so 0.4217 was already known). Surfaced that Batch 2 changes the SHARED core (generator has no per-tokenizer pattern hook), so it re-does all 3 tokenizers. User chose "go straight to Batch 2". Implemented structured pre-tok in `code/bpe_tokenizer.py`: `PRETOKEN_PATTERN` = GPT-2-style (contractions | letters | digits | punct/symbols | whitespace, leading space->▁), and `_text_to_chunks` now splits via `_pretoken_regex.finditer` (TRAIN-time pair-counting boundaries ONLY; `_text_to_encode_symbols`/decode/merge loop/forced-bigram UNCHANGED, so the slow/fast encode oracle and length-faithful decode stay green by construction). Verified: align_check PASS, speed_check --only all PASS (oracle 83 / cache / train==full-recount 105). Generated structured mix candidates @ 6k/8k/10k/12k via `make_tok1_sweep.py --skip_check` -> `tuning/tok1_b2/` + `tuning/results/tok1_b2_cpu.csv` (all gates green; tok/char 0.320->0.294, slightly less efficient than `\X` as expected). Wrote `TOK1-BATCH2-VM-RUNBOOK.md` (paste-ready 4-run prompt + SHA manifest). Staged deliverables NOT touched.
@@ -45,34 +46,18 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## NEXT ACTION
 
-**Phase 6: write `report_214034621.pdf` (<=1 page) and finalize packaging. No tokenizer work remains — all 3 are final, measured, and the zip is checker-valid.**
+**No remaining implementation or packaging action.** Phase 6 is complete and the final deliverables are ready:
 
-The submission is in a SHIPPABLE state right now. Remaining = the report + Phase 6 close-out (no VM needed; the M60 can be powered off via the cloud console — the `sudo poweroff` failed for lack of password).
+- `report_214034621.pdf`
+- `HW2_214034621.zip`
 
-Report mandatory content (PKG-03), all evidence already collected:
-- Author: Diyar Husayyan, 214034621.
-- Per-tokenizer: deviation from basic BPE (char-up BPE + ▁ mergeable space marker + capped cross-word bigram + byte fallback + length-faithful decode) and hidden-domain handling (tok3 = balanced dedup mix + medium vocab + byte fallback).
-- **tok1 story (good for the report):** data recipe matters most — the balanced mix beat domain-1-only (+0.043 -> 0.4780); vocab peaks sharply at 6000; the structured-pretok experiment (Batch 2) was a tried-and-reverted NEGATIVE result.
-- Top-5 & bottom-5 training **bigrams** per tokenizer: extract from `merges`/`merge_ranks` (first vs last cross-word/normal merges) — NOT yet generated; a small read-only script over the staged pkls suffices.
-- Per-model dev **F1 + efficiency**: `tuning/results/final_eval.csv` (F1: tok1 0.4780 / tok2 0.9557 / tok3 d1 0.4217 d2 0.9587; tok/char + tok/sentence + cold tok/s there).
-- Hidden-domain eval: tok3 reasoning + OOV evidence (`tuning/results/tok3_cpu_sweep.csv`, OOV 15/15, 0 UNK).
-- Model-2 (tok2/news) performance + parameter/characteristic/improvement discussion.
-- Format rules (PKG-02): <=1 A4 page, Arial 10, 1.15 spacing, 2.54cm margins, single column, captioned centered images, in-image text >=9pt.
+Completed final verification on 2026-06-27:
+- `py -m uv run python check_submission.py HW2_214034621.zip` -> VALID (only `[OK]`/`[RESULT]`)
+- `py -m uv run python code/align_check.py` -> PASS
+- `py -m uv run python code/speed_check.py --only all` -> PASS
+- Forbidden-file SHA-256 check -> OK for `code/base_tokenizer.py`, `code/train_ner_model.py`, `generate_tokenizers.py`, and `check_submission.py`
 
-Then rebuild + final `check_submission HW2_214034621.zip` and confirm forbidden hashes (CRLF-robust cmd above).
-
-(Done/superseded: `TOK1-BATCH1.5-VM-RUNBOOK.md`, `TOK1-BATCH2-VM-RUNBOOK.md`, `TOK1-BATCH2-DESIGN.md` — all from the closed tok1-opt push.)
-
-The paste-ready VM prompt + SHA manifest is in `.planning/phases/05-vm-ner-evaluation-measurement/TOK1-BATCH1.5-VM-RUNBOOK.md`. It scores `tuning/tok1_sweep/mix_v{6000,7000,8000,10000,12000}.pkl` on `train_1/dev_1` and writes `tuning/results/tok1_sweep_f1.csv`.
-
-When results return:
-- **If any candidate ≥ ~0.50** (or best on the equal-weighted axes incl. efficiency from `tok1_sweep_cpu.csv`): stage it — reproduce via `generate_tokenizers.py --vocab_size V --train_files_1 tok3_mix_d1sample_d2all_seed42.txt`, byte-verify, copy to `trained_tokenizers/tokenizer_1.pkl`, rebuild zip, gates green. tok1 done.
-- **If it plateaus < ~0.50 (EXPECTED — mix curve peaks ~6000):** implement **Batch 2** per `TOK1-BATCH2-DESIGN.md` (structural pre-tok in `bpe_tokenizer.py`, all gates green), regenerate candidates, sweep again.
-- Either way, then resume **Phase 5** final measurement (re-run `code/measure_final.py` after tok1 is finalized so `final_eval.csv` reflects the shipped tok1) and **Phase 6** report.
-
-Fallback if optimization stalls: `mix_v6000` (0.4780) already beats the staged tok1 (0.4352) by +0.043 and is gate-clean — a safe ship.
-
-**VM budget reality:** `time_left` read **287 min on 2026-06-26** (not ~9.8 h) — the M60 budget is very likely metered on VM **uptime**, not just GPU compute. Keep VM sessions short; batch runs.
+If resuming only to submit, use the committed `HW2_214034621.zip`.
 
 ## Hard rules
 
@@ -87,12 +72,12 @@ Fallback if optimization stalls: `mix_v6000` (0.4780) already beats the staged t
 
 ## Open questions / caveats
 
-- **Git remote:** `origin` = private GitHub `diyarh26/nlp-hw2-bpe-ner` (branch `master`). VM-Codex pulls from here. The 6 candidate pkls + 4 tagged files were force-added (gitignored otherwise; untrack with `git rm --cached` after the sweep). The ~95MB raw corpus stays gitignored — not needed for the F1 sweep.
-- **Phase 3 status:** Complete. Tok1 is staged at vocab 8000; tok2 is staged at vocab 16000; tok3 remains the Phase 2 vocab-8000 baseline pending Phase 4.
-- **Trainer note:** `TRAIN_TEXT_LIMIT` is gone; full generation is feasible (~3.3-4.0 min per full 3-tokenizer candidate run in Phase 3). If Phase 3 changes the trainer, re-confirm `speed_check.py --only train` (oracle equality) and a small double-run reproducibility check.
+- **Git remote:** `origin` = private GitHub `diyarh26/nlp-hw2-bpe-ner` (branch `master`).
+- **Final tokenizer state:** tok1 is balanced mix vocab 6000, tok2 is news vocab 16000, tok3 is balanced dedup mix vocab 8000. Do not change tokenizers unless the user explicitly reopens optimization.
+- **Trainer note:** `TRAIN_TEXT_LIMIT` is gone; full generation is feasible. If tokenizer training/encoding ever changes again, re-run `align_check.py`, `speed_check.py --only all`, reproducibility checks, build/check, and forbidden hashes.
 - **uv PATH:** run Python via `py -m uv run python ...`.
 - **Checker encoding:** on Windows set `$env:PYTHONIOENCODING='utf-8'` before `check_submission.py` (otherwise printing `▁` can fail even when the submission is valid).
-- **Ignored deliverables:** `trained_tokenizers/`, `models/`, `HW2_214034621.zip`, and `tuning/_cmp/` are gitignored/local. Current local staged deliverable uses tok1 vocab 8000, tok2 vocab 16000, tok3 vocab 8000. Rebuild after Phase 3 selection by copying selected candidate pkls from `tuning/tokenizers/` into `trained_tokenizers/`, then running `py -m uv run python code/build_submission.py`.
+- **Deliverables:** Final `HW2_214034621.zip` is force-added and committed even though `HW2_*.zip` is ignored. `trained_tokenizers/` remains gitignored/local, but the committed zip contains the final pickles.
 - **GSD helper:** local `gsd-tools.cjs` may fail (missing package metadata); state/roadmap updates can be done by hand.
 - **Line endings:** Git reports LF->CRLF warnings on Windows; no functional impact.
 
@@ -104,6 +89,7 @@ Fallback if optimization stalls: `mix_v6000` (0.4780) already beats the staged t
 - Research: `.planning/research/{STACK,ARCHITECTURE,PITFALLS,FEATURES,SUMMARY}.md`
 - Phase 1 / Phase 2 artifacts: `.planning/phases/01-*/`, `.planning/phases/02-*/`
 - Tokenizer: `code/bpe_tokenizer.py`; gates: `code/align_check.py`, `code/speed_check.py`; harness to extend: `code/test_tokenizer.py`
+- Report/package: `code/make_report.py`, `report_214034621.pdf`, `HW2_214034621.zip`, `tuning/report/report_214034621.html`
 
 ## Continuation prompts
 
