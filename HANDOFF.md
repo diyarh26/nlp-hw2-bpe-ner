@@ -16,6 +16,12 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
+- **Last updated by:** Codex - 2026-06-28 (recipe-only equal-axis sweep prep; local CPU axes complete; VM F1 sweep next).
+- **Phase:** Post-submission improvement round. The final submission zip remains frozen and ready; this round is exploratory and must not overwrite `trained_tokenizers/` or `HW2_214034621.zip` unless a candidate clearly wins and is fully revalidated.
+- **Current experiment:** Equal-axis competition scorer is locked: rank candidates by F1 (higher), efficiency/tokens-per-char (lower), and cold chars/sec (higher); present raw values and deltas alongside ranks because tiny F1 differences such as 0.005 should not be overinterpreted.
+- **Local recipe-only sweep prepared:** No tokenizer code changes. Generated missing candidates for tok1 balanced mix (`5000`, `5500`, `6500`), tok2 domain2 (`6000`, `10000`, `12000`), and tok3 balanced mix (`6000`, `10000`, `12000`) under `tuning/`. Wrote CPU-axis evidence to `tuning/results/recipe_cpu_axes.csv` and `tuning/results/tok1_recipe_cpu.csv`; all candidates have reconstruction 1.0, zero UNK, >=1 bigram, and 0 trigrams.
+- **VM F1 needed next:** Run 12 missing F1 jobs and write `tuning/results/recipe_vm_f1_results.csv`: tok1 mix_v5000/mix_v5500/mix_v6500 on domain 1; tok2 vocab6000/vocab10000/vocab12000 on domain 2; tok3 vocab6000/vocab10000/vocab12000 on both domain 1 and domain 2.
+
 - **Last updated by:** Codex - 2026-06-27 (OPTIMIZATION ROUND complete: Lever 1 speed win shipped; Lever 2 sharpened, still declined; final zip rebuilt + fully revalidated).
 - **Phase:** Final optimization/packaging round on top of the complete Phase-6 submission. Submission is ready unless the user wants the optional VM F1 confirmation or editable DOCX refresh.
 - **Final tokenizers (UNCHANGED, byte-identical to the finalized submission):** tok1 = balanced mix @ vocab 6000 (**0.4780**, `ef7db8c2382f3c7d7a48828d8ae1da5007ff0c65d746fa3a248fae37d673db14`), tok2 = news vocab 16000 (**0.9557**, `ae7c16f4871043256fd115b27ca399ffc99e5fa564a4fae7230c34da2bb52177`), tok3 = balanced dedup mix @ vocab 8000 (**0.4217/0.9587**, `f03aac21afaa350e5ac5b09ffe501b7400524dc558c18f7b9fc42aed2254e6d9`). All three reproduce byte-identical via the unedited generator with the new code.
@@ -36,6 +42,7 @@ Older pre-Codex status below is retained for history only; ignore any stale "mus
 
 ## What was just done (most recent first)
 
+- **Recipe-only equal-axis sweep prep (Codex):** Locked the selection rule for the post-submission improvement round: average rank over F1, tokens/char, and cold chars/sec, with raw values/deltas always shown. Did not edit tokenizer code, `trained_tokenizers/`, or `HW2_214034621.zip` (zip SHA remains `758EDEEA407FAC9131431FAFFBF87AE49CB0B4DBE305B53F25C04E9DCA196D78`). Generated/preserved candidate pkls under `tuning/` for the missing sweep points: `tuning/tok1_sweep/mix_v5000.pkl`, `mix_v5500.pkl`, `mix_v6500.pkl`; `tuning/tokenizers/tokenizer_2_vocab6000.pkl`, `tokenizer_2_vocab10000.pkl`, `tokenizer_2_vocab12000.pkl`; `tuning/tokenizers/tokenizer_3_vocab6000.pkl`, `tokenizer_3_vocab10000.pkl`, `tokenizer_3_vocab12000.pkl`. Measured local CPU axes in `tuning/results/recipe_cpu_axes.csv` and tok1 helper output in `tuning/results/tok1_recipe_cpu.csv`; all candidates passed local safety gates. Next: VM/GPU F1 for the 12 missing rows.
 - **Optimization round finalized (Codex):** Rebuilt `HW2_214034621.zip`, reran the full official checker (VALID), `align_check.py` PASS, `speed_check.py --only all` OVERALL PASS, `encode_bench.py --lines 4000 --repeat 3` OVERALL PASS, forbidden hashes OK, PDF page count = 1, and clean-room reproduced all three pkls byte-identical via the unedited generator (`tok1 ef7db8c2382f...`, `tok2 ae7c16f48710...`, `tok3 f03aac21afaa...`). Created empty validation commit `c758e6a`, VM F1 runbook commit `3786701`, alpha-collocation study commit `5f136d6`, and report/zip polish commit `3bcb6b9`.
 - **Lever 2 study sharpened (Codex):** Changed the gated `EXTRA_CROSS_WORD_BIGRAMS > 0` study path to corpus-wide whole alphabetic word-pair mining while preserving the default K=0 byte-identical training path. Re-ran `code/make_bigram_sweep.py`: K=0 MATCH for shipped tok1; K=40 learned clean pairs (`I am`, `How To`, `I have`, `Donald Trump`, `This is`) but improved tok/sent by only 0.08%, so K=0 remains the shipped choice.
 - **Report polished (Codex):** Updated `code/make_report.py` to pull the Lever-2 number from `bigram_sweep_cpu.csv`, added encode_bench throughput, removed brittle marker-glyph wording, regenerated `report_214034621.pdf` and `tuning/report/report_214034621.html`, visually checked the one-page layout with Edge screenshot, rebuilt the zip, and reran the hard gates. Did not touch `report_214034621.docx`.
@@ -66,7 +73,19 @@ Older pre-Codex status below is retained for history only; ignore any stale "mus
 
 ## NEXT ACTION
 
-Submission is ready. The committed `HW2_214034621.zip` has passed the full hard gate after the final report/code changes.
+Run the VM/GPU F1 sweep for the recipe-only equal-axis candidates.
+
+1. On the Tesla M60 VM: `cd ~/hw2 && git pull`.
+2. Confirm CUDA is available.
+3. Confirm the nine newly committed candidate pkls exist under `tuning/tok1_sweep/` and `tuning/tokenizers/`.
+4. Run the 12 missing F1 jobs:
+   - tok1: `mix_v5000`, `mix_v5500`, `mix_v6500` on domain 1.
+   - tok2: vocab `6000`, `10000`, `12000` on domain 2.
+   - tok3: vocab `6000`, `10000`, `12000` on domains 1 and 2.
+5. Write `tuning/results/recipe_vm_f1_results.csv` with exactly 12 data rows and logs under `tuning/logs/recipe_f1/`.
+6. Update this handoff, commit the VM result CSV/logs/HANDOFF, and push.
+
+Submission is still ready. The committed `HW2_214034621.zip` has passed the full hard gate after the final report/code changes.
 
 1. **Submit now:** use `HW2_214034621.zip`.
 2. **Optional VM confirmation:** if the user wants belt-and-suspenders F1 evidence, paste the runbook in `.planning/phases/05-vm-ner-evaluation-measurement/LEVER1-F1-CONFIRM-VM-RUNBOOK.md` on the Tesla M60 VM. Expected rows: tok1/dev1 0.4780, tok2/dev2 0.9557, tok3/dev1 0.4217, tok3/dev2 0.9587. This is optional because encode output is already byte-identical.
