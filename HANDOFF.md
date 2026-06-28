@@ -16,11 +16,11 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-28 (recipe-only equal-axis sweep prep; local CPU axes complete; VM F1 sweep next).
+- **Last updated by:** Codex - 2026-06-28 (recipe-only VM F1 sweep complete; equal-axis evidence ready).
 - **Phase:** Post-submission improvement round. The final submission zip remains frozen and ready; this round is exploratory and must not overwrite `trained_tokenizers/` or `HW2_214034621.zip` unless a candidate clearly wins and is fully revalidated.
 - **Current experiment:** Equal-axis competition scorer is locked: rank candidates by F1 (higher), efficiency/tokens-per-char (lower), and cold chars/sec (higher); present raw values and deltas alongside ranks because tiny F1 differences such as 0.005 should not be overinterpreted.
 - **Local recipe-only sweep prepared:** No tokenizer code changes. Generated missing candidates for tok1 balanced mix (`5000`, `5500`, `6500`), tok2 domain2 (`6000`, `10000`, `12000`), and tok3 balanced mix (`6000`, `10000`, `12000`) under `tuning/`. Wrote CPU-axis evidence to `tuning/results/recipe_cpu_axes.csv` and `tuning/results/tok1_recipe_cpu.csv`; all candidates have reconstruction 1.0, zero UNK, >=1 bigram, and 0 trigrams.
-- **VM F1 needed next:** Run 12 missing F1 jobs and write `tuning/results/recipe_vm_f1_results.csv`: tok1 mix_v5000/mix_v5500/mix_v6500 on domain 1; tok2 vocab6000/vocab10000/vocab12000 on domain 2; tok3 vocab6000/vocab10000/vocab12000 on both domain 1 and domain 2.
+- **VM recipe-only F1 sweep complete:** Wrote `tuning/results/recipe_vm_f1_results.csv` with 12 rows and logs under `tuning/logs/recipe_f1/`. Best visible F1 by group: tok1 `mix_v5000` = 0.4354 on domain 1; tok2 `domain2_v10000` = 0.9607 on domain 2; tok3 `mix_v6000` = 0.4780 on domain 1 and 0.9621 on domain 2.
 
 - **Last updated by:** Codex - 2026-06-27 (OPTIMIZATION ROUND complete: Lever 1 speed win shipped; Lever 2 sharpened, still declined; final zip rebuilt + fully revalidated).
 - **Phase:** Final optimization/packaging round on top of the complete Phase-6 submission. Submission is ready unless the user wants the optional VM F1 confirmation or editable DOCX refresh.
@@ -42,6 +42,7 @@ Older pre-Codex status below is retained for history only; ignore any stale "mus
 
 ## What was just done (most recent first)
 
+- **Recipe-only VM F1 sweep (Codex):** Completed the recipe-only F1 sweep for the 3-axis competition scorer on the Tesla M60 VM. No tokenizer code changes, no NER hyperparameter changes, no `trained_tokenizers/` changes, and no `HW2_214034621.zip` rebuild/edit. Wrote `tuning/results/recipe_vm_f1_results.csv` with exactly 12 rows and captured logs under `tuning/logs/recipe_f1/`. Brief F1 summary: tok1 domain 1 best `mix_v5000=0.4354`; tok2 domain 2 best `domain2_v10000=0.9607`; tok3 best visible-domain rows are `mix_v6000=0.4780` on domain 1 and `mix_v6000=0.9621` on domain 2.
 - **Recipe-only equal-axis sweep prep (Codex):** Locked the selection rule for the post-submission improvement round: average rank over F1, tokens/char, and cold chars/sec, with raw values/deltas always shown. Did not edit tokenizer code, `trained_tokenizers/`, or `HW2_214034621.zip` (zip SHA remains `758EDEEA407FAC9131431FAFFBF87AE49CB0B4DBE305B53F25C04E9DCA196D78`). Generated/preserved candidate pkls under `tuning/` for the missing sweep points: `tuning/tok1_sweep/mix_v5000.pkl`, `mix_v5500.pkl`, `mix_v6500.pkl`; `tuning/tokenizers/tokenizer_2_vocab6000.pkl`, `tokenizer_2_vocab10000.pkl`, `tokenizer_2_vocab12000.pkl`; `tuning/tokenizers/tokenizer_3_vocab6000.pkl`, `tokenizer_3_vocab10000.pkl`, `tokenizer_3_vocab12000.pkl`. Measured local CPU axes in `tuning/results/recipe_cpu_axes.csv` and tok1 helper output in `tuning/results/tok1_recipe_cpu.csv`; all candidates passed local safety gates. Next: VM/GPU F1 for the 12 missing rows.
 - **Optimization round finalized (Codex):** Rebuilt `HW2_214034621.zip`, reran the full official checker (VALID), `align_check.py` PASS, `speed_check.py --only all` OVERALL PASS, `encode_bench.py --lines 4000 --repeat 3` OVERALL PASS, forbidden hashes OK, PDF page count = 1, and clean-room reproduced all three pkls byte-identical via the unedited generator (`tok1 ef7db8c2382f...`, `tok2 ae7c16f48710...`, `tok3 f03aac21afaa...`). Created empty validation commit `c758e6a`, VM F1 runbook commit `3786701`, alpha-collocation study commit `5f136d6`, and report/zip polish commit `3bcb6b9`.
 - **Lever 2 study sharpened (Codex):** Changed the gated `EXTRA_CROSS_WORD_BIGRAMS > 0` study path to corpus-wide whole alphabetic word-pair mining while preserving the default K=0 byte-identical training path. Re-ran `code/make_bigram_sweep.py`: K=0 MATCH for shipped tok1; K=40 learned clean pairs (`I am`, `How To`, `I have`, `Donald Trump`, `This is`) but improved tok/sent by only 0.08%, so K=0 remains the shipped choice.
@@ -73,17 +74,7 @@ Older pre-Codex status below is retained for history only; ignore any stale "mus
 
 ## NEXT ACTION
 
-Run the VM/GPU F1 sweep for the recipe-only equal-axis candidates.
-
-1. On the Tesla M60 VM: `cd ~/hw2 && git pull`.
-2. Confirm CUDA is available.
-3. Confirm the nine newly committed candidate pkls exist under `tuning/tok1_sweep/` and `tuning/tokenizers/`.
-4. Run the 12 missing F1 jobs:
-   - tok1: `mix_v5000`, `mix_v5500`, `mix_v6500` on domain 1.
-   - tok2: vocab `6000`, `10000`, `12000` on domain 2.
-   - tok3: vocab `6000`, `10000`, `12000` on domains 1 and 2.
-5. Write `tuning/results/recipe_vm_f1_results.csv` with exactly 12 data rows and logs under `tuning/logs/recipe_f1/`.
-6. Update this handoff, commit the VM result CSV/logs/HANDOFF, and push.
+Analyze the recipe-only equal-axis results by joining `tuning/results/recipe_vm_f1_results.csv` with the CPU-axis evidence in `tuning/results/recipe_cpu_axes.csv` and `tuning/results/tok1_recipe_cpu.csv`. Decide whether any exploratory candidate merits further validation; do not change shipped tokenizers, `trained_tokenizers/`, or `HW2_214034621.zip` unless the user explicitly reopens optimization.
 
 Submission is still ready. The committed `HW2_214034621.zip` has passed the full hard gate after the final report/code changes.
 
