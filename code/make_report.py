@@ -35,9 +35,12 @@ def final_rows() -> list[dict[str, str]]:
 
 
 def hidden_oov_line() -> str:
+    selected_vocab = next(
+        row["vocab_size"] for row in final_rows() if row["tokenizer_index"] == "3"
+    )
     with (ROOT / "tuning" / "results" / "tok3_cpu_sweep.csv").open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
-    selected = [row for row in rows if "vocab8000" in row["tokenizer_path"]]
+    selected = [row for row in rows if f"vocab{selected_vocab}" in row["tokenizer_path"]]
     passed = max(int(row["oov_stress_cases_passed"]) for row in selected)
     total = max(int(row["oov_stress_cases_total"]) for row in selected)
     unk = max(int(row["unk_count"]) for row in selected)
@@ -172,7 +175,7 @@ th {{ background: #eee; font-weight: 700; }}
 <h1>HW2 BPE tokenizer report - {AUTHOR}, {STUDENT_ID}</h1>
 <p><b>Implementation.</b> All three tokenizers use from-scratch character-up BPE with a mergeable space marker, a single-cross-space bigram cap, byte fallback that never emits UNK, pickle-safe state, and length-faithful decode for the fixed NER aligner. This differs from basic/pre-tokenized BPE by allowing selected cross-word merges while forbidding 3+ word tokens.</p>
 <p><b>Speed (encode).</b> Encoding applies merges greedily by lowest learned rank (tiktoken-style). The naive form rescans the sentence per merge (O(n&sup2;)); we replace it with a lazy max-heap over an intrusive doubly-linked list so each merge only re-touches two neighbour pairs - an O(n&middot;log n) loop that is <i>byte-identical</i> to the slow apply-merges-in-order oracle (verified on 13.5k dev lines + edge cases for all tokenizers) yet 10-22x faster on a cold single pass (encode_bench: 1.15-1.24M chars/s here). A per-text cache and weighted-chunk incremental training keep both directions fast; output, efficiency and F1 are unchanged.</p>
-<p><b>Tokenizer choices.</b> tok1 targets Twitter: the balanced domain-1/domain-2 mix at vocab 6000 gave F1 0.4780, +0.043 over the earlier domain-1-only vocab-8000 tokenizer; larger mix vocabs fell sharply, and the structured pre-tokenization experiment was reverted after lowering F1. tok2 targets news with vocab 16000, keeping F1 0.9557 while giving the best measured efficiency/speed tradeoff among news candidates. tok3 handles the hidden domain with the balanced deduped mix, medium vocab 8000, and byte fallback; visible-domain checks are d1=0.4217, d2=0.9587, {html.escape(oov)}.</p>
+<p><b>Tokenizer choices.</b> tok1 targets Twitter: the balanced domain-1/domain-2 mix at vocab 6000 gave F1 0.4780, +0.043 over the earlier domain-1-only vocab-8000 tokenizer; larger mix vocabs fell sharply, and the structured pre-tokenization experiment was reverted after lowering F1. tok2 targets news with vocab 12000: an equal-axis sweep found F1 0.9606, slightly faster cold encode than vocab 16000, and only a modest efficiency cost. tok3 handles the hidden domain with the balanced deduped mix, vocab 6000, and byte fallback; visible-domain checks are d1=0.4780, d2=0.9621, {html.escape(oov)}.</p>
 <table class="metrics">
 <tr><th>model/split</th><th>vocab</th><th>dev F1</th><th>tok/char</th><th>tok/sent</th><th>cold tok/s</th></tr>
 {metric_table(rows)}
@@ -183,7 +186,7 @@ th {{ background: #eee; font-weight: 700; }}
 {bigram_table(bigrams)}
 </table>
 <p class="note"><b>Cross-word bigrams (studied tradeoff).</b> Each shipped tokenizer deliberately encodes exactly one checker-defined real bigram token: comma+quote followed by the space-marker form of "the". We also implemented a controlled, reproducible collocation phase restricted to corpus-wide whole alphabetic word pairs. On tok1, {html.escape(lever2)}. The pairs are cleaner than punctuation mining but still include named-entity/context joins, and the best-case efficiency gain is too small to risk word-level NER F1. Therefore the submitted code ships K=0: one mandatory bigram, zero trigrams, zero UNK.</p>
-<p><b>Hidden-domain and model-2 discussion.</b> tok3 deliberately trades a little visible F1 for fewer tokens than vocab 4000 and broader mixed-domain coverage, with exact reconstruction and no UNK on stress cases. tok2's high news F1 reflects two concrete properties of the news corpus: formal spelling/punctuation makes subword boundaries stable, and repeated named-entity/title patterns let vocab 16000 compress frequent fragments without fragmenting labels. Thus tok2 improves compression/speed while staying within 0.0053 F1 of the smaller best-F1 news candidate.</p>
+<p><b>Hidden-domain and model-2 discussion.</b> tok3 now favors the equal-axis knee: vocab 6000 recovers the best visible F1/speed signal while keeping exact reconstruction and no UNK on stress cases; the efficiency cost versus vocab 8000 is smaller than the F1 gain. tok2's high news F1 reflects two concrete properties of the news corpus: formal spelling/punctuation makes subword boundaries stable, and repeated named-entity/title patterns let vocab 12000 compress frequent fragments without fragmenting labels. Thus tok2 improves F1/speed over vocab 16000 while retaining most of its compression.</p>
 </body>
 </html>
 """

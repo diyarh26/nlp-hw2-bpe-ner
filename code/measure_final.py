@@ -57,36 +57,42 @@ FINAL = [
     },
     {
         "index": 2,
-        "vocab_size": 16000,
+        # Equal-axis recipe sweep (2026-06-29) picked vocab 12000 over the
+        # previous 16000: +0.0049 F1 and slightly faster, for only ~5% more
+        # tokens/char. Candidate F1 was measured on the Tesla M60.
+        "vocab_size": 12000,
         "shipping": "trained_tokenizers/tokenizer_2.pkl",
-        "candidate": "tuning/tokenizers/tokenizer_2_vocab16000.pkl",
+        "candidate": "tuning/tokenizers/tokenizer_2_vocab12000.pkl",
         "evals": [
             {
                 "split": "domain_2_dev",
                 "dev_file": "data/domain_2_dev.txt",
-                "vm_f1": 0.9557,
-                "vm_f1_source": "tuning/results/vm_f1_results.csv",
+                "vm_f1": 0.9606,
+                "vm_f1_source": "tuning/results/recipe_vm_f1_results.csv",
             },
         ],
     },
     {
         "index": 3,
-        "vocab_size": 8000,
+        # Equal-axis recipe sweep (2026-06-29) picked mix vocab 6000 over the
+        # previous 8000: much better visible F1 and faster encode, at a modest
+        # efficiency cost. Candidate F1 was measured on both visible domains.
+        "vocab_size": 6000,
         "shipping": "trained_tokenizers/tokenizer_3.pkl",
-        "candidate": "tuning/tokenizers/tokenizer_3_vocab8000.pkl",
+        "candidate": "tuning/tokenizers/tokenizer_3_vocab6000.pkl",
         # tok3 generalizes to a hidden domain -> report it on BOTH visible domains.
         "evals": [
             {
                 "split": "domain_1_dev",
                 "dev_file": "data/domain_1_dev.txt",
-                "vm_f1": 0.4217,
-                "vm_f1_source": "tuning/results/tok3_vm_f1_results.csv",
+                "vm_f1": 0.4780,
+                "vm_f1_source": "tuning/results/recipe_vm_f1_results.csv",
             },
             {
                 "split": "domain_2_dev",
                 "dev_file": "data/domain_2_dev.txt",
-                "vm_f1": 0.9587,
-                "vm_f1_source": "tuning/results/tok3_vm_f1_results.csv",
+                "vm_f1": 0.9621,
+                "vm_f1_source": "tuning/results/recipe_vm_f1_results.csv",
             },
         ],
     },

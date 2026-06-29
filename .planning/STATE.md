@@ -5,10 +5,10 @@ milestone_name: milestone
 current_phase: 6
 current_phase_name: Report & Final Packaging
 status: complete
-stopped_at: Submission finalized; no remaining planned work
-last_updated: "2026-06-27T18:35:00.000+03:00"
-last_activity: 2026-06-27
-last_activity_desc: Final report written, submission zip rebuilt, checker/align/speed/forbidden hashes green
+stopped_at: Equal-axis recipe winners promoted; submission zip rebuilt and validated
+last_updated: "2026-06-29T00:00:00.000+03:00"
+last_activity: 2026-06-29
+last_activity_desc: Promoted tok2@12000 and tok3@6000, regenerated report/zip, checker/align/speed/reproduction green
 progress:
   total_phases: 6
   completed_phases: 6
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Three correct, reproducible BPE tokenizers that pass every hard gate and score well on the competition's three axes (efficiency, speed, F1), including the hidden domain.
-**Current focus:** Submission finalized - report and checker-valid zip are ready.
+**Current focus:** Submission finalized - equal-axis recipe winners are packaged in a checker-valid zip.
 
 ## Current Position
 
 Phase: 6 of 6 (Report & Final Packaging) - complete
 Plan: Final report and package close-out complete
-Status: Final `HW2_214034621.zip` is checker-valid; align/speed/forbidden hashes green
-Last activity: 2026-06-27 - Wrote `report_214034621.pdf`, rebuilt zip, and verified all final gates
+Status: Final `HW2_214034621.zip` is checker-valid; align/speed/reproduction gates green
+Last activity: 2026-06-29 - Promoted tok2 vocab 12000 and tok3 balanced-mix vocab 6000 after equal-axis recipe sweep, regenerated report/zip, and verified gates
 
 Progress: [##########] 100% (6 of 6 phases complete; all planned plans done)
 
@@ -85,6 +85,7 @@ Recent decisions affecting current work:
 - [04-04]: Hidden-generalization score top pick was 4000; user selected vocab **8000** (balanced: ~14% better efficiency than 4000 for ~0.013 mean-F1 cost, medium-vocab range). Staged mix-trained tok3@8000; byte-reproducible vs fresh generator; tok1/tok2 preserved; align/speed/build/check all green. GEN-01/02/03 complete.
 - [05]: Final tokenizers measured in `tuning/results/final_eval.csv`: tok1 mix@6000 F1=0.4780, tok2 vocab16000 F1=0.9557, tok3 mix@8000 F1=0.4217/0.9587 with efficiency/speed logged.
 - [06]: `report_214034621.pdf` was generated as a one-page Arial report with top/bottom merge bigrams, dev F1/efficiency, hidden-domain rationale, and model-2 discussion. `HW2_214034621.zip` rebuilt and `check_submission.py`, `align_check.py`, `speed_check.py --only all`, and forbidden hashes all passed.
+- [post-06 equal-axis sweep]: User reopened optimization with the competition's equal F1/efficiency/speed axes. Local CPU axes plus Tesla M60 F1 rows in `tuning/results/recipe_vm_f1_results.csv` selected tok1 unchanged at balanced-mix vocab 6000, tok2 changed from vocab 16000 to 12000 (F1 0.9606, better speed, ~5% efficiency cost), and tok3 changed from balanced-mix vocab 8000 to 6000 (F1 0.4780/0.9621, faster, modest efficiency cost). Final zip/report/train_commands/final_eval were regenerated and validated.
 
 ### Pending Todos
 

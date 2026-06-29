@@ -16,11 +16,13 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
-- **Last updated by:** Codex - 2026-06-28 (recipe-only VM F1 sweep complete; equal-axis evidence ready).
-- **Phase:** Post-submission improvement round. The final submission zip remains frozen and ready; this round is exploratory and must not overwrite `trained_tokenizers/` or `HW2_214034621.zip` unless a candidate clearly wins and is fully revalidated.
-- **Current experiment:** Equal-axis competition scorer is locked: rank candidates by F1 (higher), efficiency/tokens-per-char (lower), and cold chars/sec (higher); present raw values and deltas alongside ranks because tiny F1 differences such as 0.005 should not be overinterpreted.
-- **Local recipe-only sweep prepared:** No tokenizer code changes. Generated missing candidates for tok1 balanced mix (`5000`, `5500`, `6500`), tok2 domain2 (`6000`, `10000`, `12000`), and tok3 balanced mix (`6000`, `10000`, `12000`) under `tuning/`. Wrote CPU-axis evidence to `tuning/results/recipe_cpu_axes.csv` and `tuning/results/tok1_recipe_cpu.csv`; all candidates have reconstruction 1.0, zero UNK, >=1 bigram, and 0 trigrams.
-- **VM recipe-only F1 sweep complete:** Wrote `tuning/results/recipe_vm_f1_results.csv` with 12 rows and logs under `tuning/logs/recipe_f1/`. Best visible F1 by group: tok1 `mix_v5000` = 0.4354 on domain 1; tok2 `domain2_v10000` = 0.9607 on domain 2; tok3 `mix_v6000` = 0.4780 on domain 1 and 0.9621 on domain 2.
+- **Last updated by:** Codex - 2026-06-29 (equal-axis recipe winners promoted; report/zip rebuilt; hard gates green).
+- **Phase:** Post-submission improvement round promoted into the final submission artifact. `HW2_214034621.zip` now contains the equal-axis winners and is the current hand-in candidate.
+- **Final tokenizers (CURRENT ZIP):** tok1 = balanced mix @ vocab 6000 (**0.4780**, `ef7db8c2382f...`), tok2 = news @ vocab 12000 (**0.9606**, `5e849d4d9c...`), tok3 = balanced dedup mix @ vocab 6000 (**0.4780/0.9621**, `ef7db8c2382f...`). tok3@6000 is byte-identical to tok1@6000 because both intentionally use the same balanced mix + vocab after the equal-axis sweep.
+- **Equal-axis decision:** Selection used average rank over F1, efficiency/tokens-per-char, and cold chars/sec, with raw deltas checked. tok1 stayed at 6000 because all nearby points lost about 0.043-0.049 F1. tok2 moved 16000 -> 12000 (+0.0049 F1, slightly faster, about 5% efficiency cost). tok3 moved 8000 -> 6000 (+0.0563 domain1 F1, +0.0034 domain2 F1, faster, modest efficiency cost).
+- **Latest validation:** `check_submission.py HW2_214034621.zip` VALID; `align_check.py` OVERALL PASS; `speed_check.py --only all` OVERALL PASS; PDF structure check shows 1 page; zip contains PDF + 3 pkls + `code/bpe_tokenizer.py` + `code/make_tok3_mix.py` + `train_commands.txt`; fresh unedited-generator reproduction matched tok2@12000 and tok3@6000 byte-for-byte.
+
+Older status below is retained for history only; ignore stale tokenizer choices in it:
 
 - **Last updated by:** Codex - 2026-06-27 (OPTIMIZATION ROUND complete: Lever 1 speed win shipped; Lever 2 sharpened, still declined; final zip rebuilt + fully revalidated).
 - **Phase:** Final optimization/packaging round on top of the complete Phase-6 submission. Submission is ready unless the user wants the optional VM F1 confirmation or editable DOCX refresh.
@@ -42,6 +44,7 @@ Older pre-Codex status below is retained for history only; ignore any stale "mus
 
 ## What was just done (most recent first)
 
+- **Equal-axis winners promoted into final zip (Codex):** Staged `tuning/tokenizers/tokenizer_2_vocab12000.pkl` as `trained_tokenizers/tokenizer_2.pkl` and `tuning/tokenizers/tokenizer_3_vocab6000.pkl` as `trained_tokenizers/tokenizer_3.pkl`; tok1 remains `mix_v6000`. Updated `code/measure_final.py`, `train_commands.txt`, `code/make_report.py`, `tuning/results/tok3_cpu_sweep.csv`, `tuning/results/final_eval.csv`, `report_214034621.pdf`, and `HW2_214034621.zip`. New final metrics: tok1 d1 F1 0.4780 / tok-char 0.3067; tok2 d2 F1 0.9606 / tok-char 0.2410; tok3 d1/d2 F1 0.4780/0.9621 / tok-char 0.3067 and 0.2870. Hard validation green: official checker valid, align pass, speed/oracle pass, PDF one-page structure check, fresh generator reproduction matched tok2@12000 (`5e849d4d...`) and tok3@6000 (`ef7db8c2...`) exactly.
 - **Recipe-only VM F1 sweep (Codex):** Completed the recipe-only F1 sweep for the 3-axis competition scorer on the Tesla M60 VM. No tokenizer code changes, no NER hyperparameter changes, no `trained_tokenizers/` changes, and no `HW2_214034621.zip` rebuild/edit. Wrote `tuning/results/recipe_vm_f1_results.csv` with exactly 12 rows and captured logs under `tuning/logs/recipe_f1/`. Brief F1 summary: tok1 domain 1 best `mix_v5000=0.4354`; tok2 domain 2 best `domain2_v10000=0.9607`; tok3 best visible-domain rows are `mix_v6000=0.4780` on domain 1 and `mix_v6000=0.9621` on domain 2.
 - **Recipe-only equal-axis sweep prep (Codex):** Locked the selection rule for the post-submission improvement round: average rank over F1, tokens/char, and cold chars/sec, with raw values/deltas always shown. Did not edit tokenizer code, `trained_tokenizers/`, or `HW2_214034621.zip` (zip SHA remains `758EDEEA407FAC9131431FAFFBF87AE49CB0B4DBE305B53F25C04E9DCA196D78`). Generated/preserved candidate pkls under `tuning/` for the missing sweep points: `tuning/tok1_sweep/mix_v5000.pkl`, `mix_v5500.pkl`, `mix_v6500.pkl`; `tuning/tokenizers/tokenizer_2_vocab6000.pkl`, `tokenizer_2_vocab10000.pkl`, `tokenizer_2_vocab12000.pkl`; `tuning/tokenizers/tokenizer_3_vocab6000.pkl`, `tokenizer_3_vocab10000.pkl`, `tokenizer_3_vocab12000.pkl`. Measured local CPU axes in `tuning/results/recipe_cpu_axes.csv` and tok1 helper output in `tuning/results/tok1_recipe_cpu.csv`; all candidates passed local safety gates. Next: VM/GPU F1 for the 12 missing rows.
 - **Optimization round finalized (Codex):** Rebuilt `HW2_214034621.zip`, reran the full official checker (VALID), `align_check.py` PASS, `speed_check.py --only all` OVERALL PASS, `encode_bench.py --lines 4000 --repeat 3` OVERALL PASS, forbidden hashes OK, PDF page count = 1, and clean-room reproduced all three pkls byte-identical via the unedited generator (`tok1 ef7db8c2382f...`, `tok2 ae7c16f48710...`, `tok3 f03aac21afaa...`). Created empty validation commit `c758e6a`, VM F1 runbook commit `3786701`, alpha-collocation study commit `5f136d6`, and report/zip polish commit `3bcb6b9`.
@@ -74,12 +77,10 @@ Older pre-Codex status below is retained for history only; ignore any stale "mus
 
 ## NEXT ACTION
 
-Analyze the recipe-only equal-axis results by joining `tuning/results/recipe_vm_f1_results.csv` with the CPU-axis evidence in `tuning/results/recipe_cpu_axes.csv` and `tuning/results/tok1_recipe_cpu.csv`. Decide whether any exploratory candidate merits further validation; do not change shipped tokenizers, `trained_tokenizers/`, or `HW2_214034621.zip` unless the user explicitly reopens optimization.
+Submission is ready again after the equal-axis promotion.
 
-Submission is still ready. The committed `HW2_214034621.zip` has passed the full hard gate after the final report/code changes.
-
-1. **Submit now:** use `HW2_214034621.zip`.
-2. **Optional VM confirmation:** if the user wants belt-and-suspenders F1 evidence, paste the runbook in `.planning/phases/05-vm-ner-evaluation-measurement/LEVER1-F1-CONFIRM-VM-RUNBOOK.md` on the Tesla M60 VM. Expected rows: tok1/dev1 0.4780, tok2/dev2 0.9557, tok3/dev1 0.4217, tok3/dev2 0.9587. This is optional because encode output is already byte-identical.
+1. **Submit current zip:** `HW2_214034621.zip`.
+2. **If committing this local round:** include the updated scripts/docs/results/report/zip. `trained_tokenizers/` is ignored; the current zip contains the staged pkls.
 3. **Optional editable DOCX:** only if the user explicitly asks, refresh `report_214034621.docx` to match the PDF narrative. Do not overwrite it or the Word lock file without permission; DOCX is not part of the zip.
 
 ## Completed optimization agenda (historical)
@@ -92,10 +93,10 @@ Claude shipped Lever 1 (committed `8cd1c55`, pushed) and updated the report + Le
 3. `py -m uv run python code/align_check.py` (PASS) and `py -m uv run python code/speed_check.py --only all` (ORACLE+CACHE+TRAIN PASS).
 4. `py -m uv run python code/encode_bench.py --lines 4000 --repeat 3` → OVERALL PASS (encode byte-identical to oracle + frozen reference greedy) and record the chars/s.
 5. Forbidden-file SHA-256 check vs `.planning/phases/01-gates-first-submittable-tokenizer/forbidden_files.sha256` → all OK.
-6. **Clean-room reproduce ALL THREE pkls** via the unedited generator + `train_commands.txt` (build the mix with `make_tok3_mix.py` first; tok2 = `--vocab_size 16000`, tok1 = mix `--vocab_size 6000 --train_files_1 …`, tok3 = mix `--vocab_size 8000 --train_files_3 …`). Byte-compare: tok1 `ef7db8c2…`, tok2 `ae7c16f4…`, tok3 `f03aac21…`. (Tip: to avoid retraining the unneeded slots, point the other two `--train_files_*` at a 4-line stub — training is RNG-free so each pkl depends only on its own file + vocab.)
+6. **Clean-room reproduce ALL THREE pkls** via the unedited generator + `train_commands.txt` (build the mix with `make_tok3_mix.py` first; tok1 = mix `--vocab_size 6000 --train_files_1 …`, tok2 = `--vocab_size 12000`, tok3 = mix `--vocab_size 6000 --train_files_3 …`). Byte-compare: tok1 `ef7db8c2…`, tok2 `5e849d4d…`, tok3 `ef7db8c2…`. (Tip: to avoid retraining the unneeded slots, point the other two `--train_files_*` at a 4-line stub — training is RNG-free so each pkl depends only on its own file + vocab.)
 7. PDF ≤1 page: `py -m uv run python -c "import re;d=open('report_214034621.pdf','rb').read();print(len(re.findall(rb'/Type\\s*/Page(?![s])',d)))"` → 1.
 
-**B. VM F1 confirmation (belt-and-suspenders; uses the GitHub→VM relay).** Lever 1 is byte-identical so F1 is *mathematically* unchanged, but a VM re-score certifies it for the report. Prepare a paste-ready prompt that runs `code/train_ner_model.py` on the three shipped pkls (tok1→dev_1, tok2→dev_2, tok3→dev_1 & dev_2, unchanged NER hyperparams) and confirms F1 = 0.4780 / 0.9557 / 0.4217 / 0.9587. Write results to `tuning/results/lever1_f1_confirm.csv`. The user runs it; you analyze. (Skip only if the user says the byte-identity proof is enough — note that option to them.)
+**B. VM F1 confirmation (belt-and-suspenders; uses the GitHub→VM relay).** Lever 1 is byte-identical so F1 is *mathematically* unchanged, but a VM re-score certifies it for the report. Prepare a paste-ready prompt that runs `code/train_ner_model.py` on the three shipped pkls (tok1→dev_1, tok2→dev_2, tok3→dev_1 & dev_2, unchanged NER hyperparams) and confirms F1 = 0.4780 / 0.9606 / 0.4780 / 0.9621. Write results to `tuning/results/lever1_f1_confirm.csv`. The user runs it; you analyze. (Skip only if the user says the byte-identity proof is enough — note that option to them.)
 
 **C. Strengthen the report's Lever 2 study WITHOUT shipping bigrams (user shipped K=0).** Optional but high-value for the 20% report axis: rewrite the collocation mining to be corpus-wide and restricted to alphabetic-word pairs (so it finds clean `in the`/`of the`/`to the` instead of punctuation noise), re-run `code/make_bigram_sweep.py` to size the *best-case* efficiency gain, and fold the sharper number into the report. STILL ship K=0 — this only makes the negative-result narrative more rigorous. Do NOT change the shipped tokenizers.
 
@@ -121,7 +122,7 @@ If resuming only to submit RIGHT NOW, the committed `HW2_214034621.zip` after bl
 ## Open questions / caveats
 
 - **Git remote:** `origin` = private GitHub `diyarh26/nlp-hw2-bpe-ner` (branch `master`).
-- **Final tokenizer state:** tok1 is balanced mix vocab 6000, tok2 is news vocab 16000, tok3 is balanced dedup mix vocab 8000. Do not change tokenizers unless the user explicitly reopens optimization.
+- **Final tokenizer state:** tok1 is balanced mix vocab 6000, tok2 is news vocab 12000, tok3 is balanced dedup mix vocab 6000. Do not change tokenizers unless the user explicitly reopens optimization.
 - **Trainer note:** `TRAIN_TEXT_LIMIT` is gone; full generation is feasible. If tokenizer training/encoding ever changes again, re-run `align_check.py`, `speed_check.py --only all`, reproducibility checks, build/check, and forbidden hashes.
 - **uv PATH:** run Python via `py -m uv run python ...`.
 - **Checker encoding:** on Windows set `$env:PYTHONIOENCODING='utf-8'` before `check_submission.py` (otherwise printing `▁` can fail even when the submission is valid).

@@ -21,9 +21,12 @@ make_tok3_mix command below builds the mix): put the mix in tok1's slot via
 py -m uv run python generate_tokenizers.py --vocab_size 6000 --seed 42 --output_dir tuning/_stage_tok1 --train_files_1 tok3_mix_d1sample_d2all_seed42.txt
 copy tuning/_stage_tok1/tokenizer_1.pkl trained_tokenizers/tokenizer_1.pkl
 
-tokenizer_2.pkl (news/domain 2, selected vocab 16000):
-py -m uv run python generate_tokenizers.py --vocab_size 16000 --seed 42 --output_dir tuning/_cmp/16000
-copy tuning/_cmp/16000/tokenizer_2.pkl trained_tokenizers/tokenizer_2.pkl
+tokenizer_2.pkl (news/domain 2, FINAL selected vocab 12000):
+Post-submission equal-axis recipe sweep re-ranked candidates by F1, efficiency
+(tokens/char), and cold chars/sec. Vocab 12000 beat the old 16000 overall:
+F1 0.9606 vs 0.9557 and slightly faster, with only ~5% more tokens/char.
+py -m uv run python generate_tokenizers.py --vocab_size 12000 --seed 42 --output_dir tuning/_cmp/12000
+copy tuning/_cmp/12000/tokenizer_2.pkl trained_tokenizers/tokenizer_2.pkl
 
 tokenizer_3.pkl: SUPERSEDED by the Phase 4 hidden-domain recipe below (it is NO
 longer the naive both-domains vocab-8000 baseline). See "Phase 4 SELECTED tok3".
@@ -35,17 +38,17 @@ Deterministic and byte-identical across runs (see output_sha256 in
 tuning/results/tok3_mix_manifest.json). The ~45MB mix is a regenerable,
 gitignored artifact under data/.
 py -m uv run python code/make_tok3_mix.py --seed 42 --domain1 data/domain_1_train.txt --domain2 data/domain_2_train.txt --output data/tok3_mix_d1sample_d2all_seed42.txt --manifest tuning/results/tok3_mix_manifest.json
-Tok3 candidate generation (04-02) - unedited generator on the mix, vocab sweep:
+Tok3 candidate generation (04-02 + post-submission recipe sweep) - unedited generator on the mix, vocab sweep:
 py -m uv run python generate_tokenizers.py --vocab_size 4000 --seed 42 --output_dir tuning/_tok3_gen/4000 --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
+py -m uv run python generate_tokenizers.py --vocab_size 6000 --seed 42 --output_dir tuning/_tok3_gen/6000 --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
 py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir tuning/_tok3_gen/8000 --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
 py -m uv run python generate_tokenizers.py --vocab_size 16000 --seed 42 --output_dir tuning/_tok3_gen/16000 --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
 (then copy each tuning/_tok3_gen/{V}/tokenizer_3.pkl -> tuning/tokenizers/tokenizer_3_vocab{V}.pkl)
-Phase 4 SELECTED tok3 (04-04): vocab 8000 on the balanced mix. Chosen over the
-hidden-generalization score's top pick (4000) to capture the equal-weighted
-efficiency axis: ~14% fewer tokens than 4000 for only ~0.013 mean visible-F1
-cost, and squarely in the recommended medium-vocab range. Reproduce (after the
-make_tok3_mix command above):
-py -m uv run python generate_tokenizers.py --vocab_size 8000 --seed 42 --output_dir tuning/_tok3_cmp/selected --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
+FINAL SELECTED tok3: vocab 6000 on the balanced mix. A later equal-axis recipe
+sweep found that 6000 beats the old 8000 under the competition tradeoff:
+domain1/domain2 F1 = 0.4780/0.9621 vs 0.4217/0.9587, faster cold encode, with a
+modest efficiency cost. Reproduce (after the make_tok3_mix command above):
+py -m uv run python generate_tokenizers.py --vocab_size 6000 --seed 42 --output_dir tuning/_tok3_cmp/selected --train_files_3 tok3_mix_d1sample_d2all_seed42.txt
 copy tuning/_tok3_cmp/selected/tokenizer_3.pkl trained_tokenizers/tokenizer_3.pkl
 
 Training method (Phase 2): the uncapped weighted word-chunk BPE trainer with
