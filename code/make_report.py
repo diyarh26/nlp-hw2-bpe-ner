@@ -23,7 +23,7 @@ EDGE_PATHS = [
 ]
 
 TRAINING_FILES = {
-    1: ROOT / "data" / "domain_1_train.txt",
+    1: ROOT / "data" / "mix_d1x2_d2all_seed42.txt",
     2: ROOT / "data" / "domain_2_train.txt",
     3: ROOT / "data" / "tok3_mix_d1sample_d2all_seed42.txt",
 }
@@ -175,7 +175,7 @@ th {{ background: #eee; font-weight: 700; }}
 <h1>HW2 BPE tokenizer report - {AUTHOR}, {STUDENT_ID}</h1>
 <p><b>Implementation.</b> All three tokenizers use from-scratch character-up BPE with a mergeable space marker, a single-cross-space bigram cap, byte fallback that never emits UNK, pickle-safe state, and length-faithful decode for the fixed NER aligner. This differs from basic/pre-tokenized BPE by allowing selected cross-word merges while forbidding 3+ word tokens.</p>
 <p><b>Speed (encode).</b> Encoding applies merges greedily by lowest learned rank (tiktoken-style). The naive form rescans the sentence per merge (O(n&sup2;)); we replace it with a lazy max-heap over an intrusive doubly-linked list so each merge only re-touches two neighbour pairs - an O(n&middot;log n) loop that is <i>byte-identical</i> to the slow apply-merges-in-order oracle (verified on 13.5k dev lines + edge cases for all tokenizers) yet 10-22x faster on a cold single pass (encode_bench: 1.15-1.24M chars/s here). A per-text cache and weighted-chunk incremental training keep both directions fast; output, efficiency and F1 are unchanged.</p>
-<p><b>Tokenizer choices.</b> tok1 targets Twitter: the balanced domain-1/domain-2 mix at vocab 6000 gave F1 0.4780, +0.043 over the earlier domain-1-only vocab-8000 tokenizer; larger mix vocabs fell sharply, and the structured pre-tokenization experiment was reverted after lowering F1. tok2 targets news with vocab 12000: an equal-axis sweep found F1 0.9606, slightly faster cold encode than vocab 16000, and only a modest efficiency cost. tok3 handles the hidden domain with the balanced deduped mix, vocab 6000, and byte fallback; visible-domain checks are d1=0.4780, d2=0.9621, {html.escape(oov)}.</p>
+<p><b>Tokenizer choices.</b> tok1 targets Twitter: a domain-1-heavy (2:1 Twitter:news) mix at vocab 5500 gave F1 0.4817, beating the balanced 1:1 mix at vocab 6000 (0.4780) on all three axes (equal-or-better tokens/char and cold speed). Pure-domain-1 candidates scored lower (=<0.4352) and larger vocabs cut F1, confirming the news data regularizes the Twitter subword vocabulary while the 2:1 ratio keeps more Twitter coverage. tok2 targets news with vocab 12000: an equal-axis sweep found F1 0.9606, slightly faster cold encode than vocab 16000, and only a modest efficiency cost. tok3 handles the hidden domain with the balanced 1:1 deduped mix, vocab 6000, and byte fallback - kept balanced (not domain-1-heavy) so the vocabulary generalizes to the unseen domain; visible-domain checks are d1=0.4780, d2=0.9621, {html.escape(oov)}.</p>
 <table class="metrics">
 <tr><th>model/split</th><th>vocab</th><th>dev F1</th><th>tok/char</th><th>tok/sent</th><th>cold tok/s</th></tr>
 {metric_table(rows)}

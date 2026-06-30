@@ -10,15 +10,19 @@ tokenizer_3.pkl: domain_1_train.txt domain_2_train.txt
 
 Selected tokenizer commands:
 
-tokenizer_1.pkl (Twitter/domain 1) - FINAL: the balanced domain-1+2 mix @ vocab
-6000 (tok1-opt Batch 1). Training tok1 on the balanced mix (not domain-1-only)
-gave the best Twitter dev F1 = 0.4780, beating domain-1-only vocab 8000 (0.4352)
-by +0.043. The mix-vocab curve peaks at 6000 (7k=0.430, 8k=0.422, ...). A
-structured (GPT-2-style) pre-tokenization (Batch 2) was tried and REVERTED -- it
-lowered Twitter F1 at every vocab (best 0.4264). Reproduce (after the
-make_tok3_mix command below builds the mix): put the mix in tok1's slot via
---train_files_1, take tokenizer_1.pkl.
-py -m uv run python generate_tokenizers.py --vocab_size 6000 --seed 42 --output_dir tuning/_stage_tok1 --train_files_1 tok3_mix_d1sample_d2all_seed42.txt
+tokenizer_1.pkl (Twitter/domain 1) - FINAL: the domain-1-HEAVY (2:1 d1:d2) mix @
+vocab 5500 (recipe-2 sweep). This beats the prior 1:1-mix @ 6000 on ALL three
+competition axes: Twitter dev F1 0.4817 vs 0.4780, while tying efficiency
+(0.3063 vs 0.3067 tokens/char) and tokenization speed. The 2:1 mix keeps more
+Twitter coverage than the 1:1 mix while retaining the news-data regularization
+that makes any mix beat domain-1-only (pure-domain-1 candidates scored <=0.4352
+F1, and larger vocab hurt Twitter F1). First build the 2:1 mix with make_mix.py
+(--d1_ratio 2.0 = round(2 * domain-2 line count) deterministically-sampled
+domain-1 lines + all of domain 2, exact-line deduped; byte-reproducible, see
+output_sha256 in tuning/results/mix_d1x2_manifest.json), then put it in tok1's
+slot via --train_files_1 and take tokenizer_1.pkl.
+py -m uv run python code/make_mix.py --seed 42 --d1_ratio 2.0 --domain1 data/domain_1_train.txt --domain2 data/domain_2_train.txt --output data/mix_d1x2_d2all_seed42.txt --manifest tuning/results/mix_d1x2_manifest.json
+py -m uv run python generate_tokenizers.py --vocab_size 5500 --seed 42 --output_dir tuning/_stage_tok1 --train_files_1 mix_d1x2_d2all_seed42.txt
 copy tuning/_stage_tok1/tokenizer_1.pkl trained_tokenizers/tokenizer_1.pkl
 
 tokenizer_2.pkl (news/domain 2, FINAL selected vocab 12000):

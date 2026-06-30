@@ -1,42 +1,38 @@
 {
   "1": {
-    "file": "data\\domain_1_train.txt",
-    "lines": 1280000,
-    "words": 16858126,
-    "pair_types": 5296115,
+    "file": "data\\mix_d1x2_d2all_seed42.txt",
+    "lines": 950911,
+    "words": 13261279,
+    "pair_types": 4693200,
     "top5": [
       [
         "in the",
-        34889
+        30267
       ],
       [
-        "going to",
-        29182
+        "of the",
+        25083
       ],
       [
         "for the",
-        27436
+        18616
+      ],
+      [
+        "to the",
+        18066
       ],
       [
         "on the",
-        23322
-      ],
-      [
-        "to be",
-        23173
+        17280
       ]
     ],
     "bottom5": [
       [
-        "! !Damn",
+        "! !!!",
         1
       ],
       [
         "! #Apprentice",
-        1
-      ],
-      [
-        "! #Big",
         1
       ],
       [
@@ -45,6 +41,10 @@
       ],
       [
         "! #FrenchMcflyTeam",
+        1
+      ],
+      [
+        "! #Myspace-y",
         1
       ]
     ]

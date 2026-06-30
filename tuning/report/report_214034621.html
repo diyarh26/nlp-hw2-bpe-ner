@@ -31,18 +31,18 @@ th { background: #eee; font-weight: 700; }
 <h1>HW2 BPE tokenizer report - Diyar Husayyan, 214034621</h1>
 <p><b>Implementation.</b> All three tokenizers use from-scratch character-up BPE with a mergeable space marker, a single-cross-space bigram cap, byte fallback that never emits UNK, pickle-safe state, and length-faithful decode for the fixed NER aligner. This differs from basic/pre-tokenized BPE by allowing selected cross-word merges while forbidding 3+ word tokens.</p>
 <p><b>Speed (encode).</b> Encoding applies merges greedily by lowest learned rank (tiktoken-style). The naive form rescans the sentence per merge (O(n&sup2;)); we replace it with a lazy max-heap over an intrusive doubly-linked list so each merge only re-touches two neighbour pairs - an O(n&middot;log n) loop that is <i>byte-identical</i> to the slow apply-merges-in-order oracle (verified on 13.5k dev lines + edge cases for all tokenizers) yet 10-22x faster on a cold single pass (encode_bench: 1.15-1.24M chars/s here). A per-text cache and weighted-chunk incremental training keep both directions fast; output, efficiency and F1 are unchanged.</p>
-<p><b>Tokenizer choices.</b> tok1 targets Twitter: the balanced domain-1/domain-2 mix at vocab 6000 gave F1 0.4780, +0.043 over the earlier domain-1-only vocab-8000 tokenizer; larger mix vocabs fell sharply, and the structured pre-tokenization experiment was reverted after lowering F1. tok2 targets news with vocab 12000: an equal-axis sweep found F1 0.9606, slightly faster cold encode than vocab 16000, and only a modest efficiency cost. tok3 handles the hidden domain with the balanced deduped mix, vocab 6000, and byte fallback; visible-domain checks are d1=0.4780, d2=0.9621, OOV stress 15/15, UNK=0.</p>
+<p><b>Tokenizer choices.</b> tok1 targets Twitter: a domain-1-heavy (2:1 Twitter:news) mix at vocab 5500 gave F1 0.4817, beating the balanced 1:1 mix at vocab 6000 (0.4780) on all three axes (equal-or-better tokens/char and cold speed). Pure-domain-1 candidates scored lower (=<0.4352) and larger vocabs cut F1, confirming the news data regularizes the Twitter subword vocabulary while the 2:1 ratio keeps more Twitter coverage. tok2 targets news with vocab 12000: an equal-axis sweep found F1 0.9606, slightly faster cold encode than vocab 16000, and only a modest efficiency cost. tok3 handles the hidden domain with the balanced 1:1 deduped mix, vocab 6000, and byte fallback - kept balanced (not domain-1-heavy) so the vocabulary generalizes to the unseen domain; visible-domain checks are d1=0.4780, d2=0.9621, OOV stress 15/15, UNK=0.</p>
 <table class="metrics">
 <tr><th>model/split</th><th>vocab</th><th>dev F1</th><th>tok/char</th><th>tok/sent</th><th>cold tok/s</th></tr>
-<tr><td>tok1 domain_1</td><td>6000</td><td>0.4780</td><td>0.307</td><td>22.52</td><td>269836</td></tr>
-<tr><td>tok2 domain_2</td><td>12000</td><td>0.9606</td><td>0.241</td><td>21.77</td><td>187317</td></tr>
-<tr><td>tok3 domain_1</td><td>6000</td><td>0.4780</td><td>0.307</td><td>22.52</td><td>267020</td></tr>
-<tr><td>tok3 domain_2</td><td>6000</td><td>0.9621</td><td>0.287</td><td>25.93</td><td>270166</td></tr>
+<tr><td>tok1 domain_1</td><td>5500</td><td>0.4817</td><td>0.306</td><td>22.49</td><td>278600</td></tr>
+<tr><td>tok2 domain_2</td><td>12000</td><td>0.9606</td><td>0.241</td><td>21.77</td><td>256998</td></tr>
+<tr><td>tok3 domain_1</td><td>6000</td><td>0.4780</td><td>0.307</td><td>22.52</td><td>350121</td></tr>
+<tr><td>tok3 domain_2</td><td>6000</td><td>0.9621</td><td>0.287</td><td>25.93</td><td>318147</td></tr>
 </table>
 <p class="note"><b>Training-set bigrams.</b> These are full-file counts of adjacent whitespace-delimited two-word sequences, as required by the assignment.</p>
 <table class="bigrams">
 <tr><th>tok</th><th>train file</th><th>top 5 two-word sequences</th><th>least 5 two-word sequences</th></tr>
-<tr><td>tok1</td><td>data\domain_1_train.txt</td><td>in the (34889); going to (29182); for the (27436); on the (23322); to be (23173)</td><td>! !Damn (1); ! #Apprentice (1); ! #Big (1); ! #FB (1); ! #FrenchMcflyTeam (1)</td></tr>
+<tr><td>tok1</td><td>data\mix_d1x2_d2all_seed42.txt</td><td>in the (30267); of the (25083); for the (18616); to the (18066); on the (17280)</td><td>! !!! (1); ! #Apprentice (1); ! #FB (1); ! #FrenchMcflyTeam (1); ! #Myspace-y (1)</td></tr>
 <tr><td>tok2</td><td>data\domain_2_train.txt</td><td>of the (15662); in the (12929); to the (6643); on the (5665); to be (5548)</td><td>!! Shot (1); !!! It’s (1); !&amp;*@#%! Watch (1); !@#$-ing Kidding (1); !T Books (1)</td></tr>
 <tr><td>tok3</td><td>data\tok3_mix_d1sample_d2all_seed42.txt</td><td>in the (21479); of the (20299); to the (12293); for the (11919); on the (11441)</td><td>! #FB (1); ! #MetaKong (1); ! #Myspace-y (1); ! #SMTB (1); ! #familyforce5 (1)</td></tr>
 </table>

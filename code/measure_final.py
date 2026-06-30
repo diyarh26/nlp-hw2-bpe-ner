@@ -39,19 +39,21 @@ from test_tokenizer import load_texts, measure_encoding_speed, test_reconstructi
 # fails loudly instead of attaching a stale F1.
 FINAL = [
     {
-        # tok1 finalized on the balanced mix @ vocab 6000 (tok1-opt Batch 1: best
-        # Twitter F1 0.4780, +0.043 over the prior vocab-8000 domain-1-only tok1).
-        # Structured pre-tok (Batch 2) was tried and reverted (it hurt F1).
+        # tok1 re-optimized on the domain-1-HEAVY (2:1 d1:d2) mix @ vocab 5500
+        # (recipe-2 sweep). VM F1 0.4817 beats the prior 1:1-mix @ 6000 (0.4780)
+        # while tying efficiency (0.3063 vs 0.3067 tok/char) and speed -- a clean
+        # win on all three competition axes. Pure-domain-1 candidates scored lower
+        # F1 (<=0.4352), confirming the news-data regularization is what helps.
         "index": 1,
-        "vocab_size": 6000,
+        "vocab_size": 5500,
         "shipping": "trained_tokenizers/tokenizer_1.pkl",
-        "candidate": "tuning/tok1_sweep/mix_v6000.pkl",
+        "candidate": "tuning/recipe_sweep/mix2_v5500.pkl",
         "evals": [
             {
                 "split": "domain_1_dev",
                 "dev_file": "data/domain_1_dev.txt",
-                "vm_f1": 0.4780,
-                "vm_f1_source": "tuning/results/tok1_sweep_f1.csv",
+                "vm_f1": 0.4817,
+                "vm_f1_source": "tuning/results/recipe2_vm_f1_results.csv",
             },
         ],
     },

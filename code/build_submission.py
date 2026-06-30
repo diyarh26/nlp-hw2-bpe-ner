@@ -21,6 +21,7 @@ REQUIRED_FILES = [
     ROOT / "trained_tokenizers" / "tokenizer_3.pkl",
     ROOT / "code" / "bpe_tokenizer.py",
     ROOT / "code" / "make_tok3_mix.py",
+    ROOT / "code" / "make_mix.py",
     ROOT / "train_commands.txt",
 ]
 
@@ -43,6 +44,7 @@ def build_zip() -> None:
         (ROOT / "trained_tokenizers" / "tokenizer_3.pkl", "trained_tokenizers/tokenizer_3.pkl"),
         (ROOT / "code" / "bpe_tokenizer.py", "code/bpe_tokenizer.py"),
         (ROOT / "code" / "make_tok3_mix.py", "code/make_tok3_mix.py"),
+        (ROOT / "code" / "make_mix.py", "code/make_mix.py"),
         (ROOT / "train_commands.txt", "train_commands.txt"),
     ]
     with zipfile.ZipFile(ZIP_PATH, "w", compression=zipfile.ZIP_DEFLATED) as archive:
