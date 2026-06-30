@@ -64,7 +64,8 @@ do NOT touch trained_tokenizers/ or HW2_214034621.zip. On ANY error, stop and
 report instead of filling in missing rows.
 
 SETUP
-1. cd ~/hw2 && git pull
+1. cd ~/hw2 && git fetch origin && git checkout recipe2-sweep && git pull origin recipe2-sweep
+   (this work is on the recipe2-sweep BRANCH, not master)
 2. uv sync if needed.
 3. Confirm CUDA, STOP if false:
    uv run python -c "import torch; print('cuda', torch.cuda.is_available()); print('gpu', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'NO_CUDA')"
@@ -110,10 +111,10 @@ with out.open("w", newline="", encoding="utf-8") as fh:
 print(out.read_text())
 PY
 
-COMMIT + PUSH
+COMMIT + PUSH (to the recipe2-sweep branch, NOT master)
 git add tuning/logs/recipe2_f1 tuning/results/recipe2_vm_f1_results.csv
 git commit -m "feat(recipe2): VM F1 for tok1/tok3 recipe sweep"
-git push origin master
+git push origin recipe2-sweep
 
 Then report all 11 observed F1 values back.
 ```
