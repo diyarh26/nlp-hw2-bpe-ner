@@ -1,0 +1,41 @@
+[provenance] re-training 1:1 mix @ 6000 to match shipped tok1 (ef7db8c2382f) ...
+[provenance] OK: ef7db8c2382f matches shipped tok1.
+  eval domain_1_dev: 160000 lines (data/domain_1_dev.txt)
+  eval domain_2_dev: 39962 lines (data/domain_2_dev.txt)
+
+[d1_v8000] reading data/domain_1_train.txt ...
+[d1_v8000] training vocab 8000 on data/domain_1_train.txt (1280000 lines) -> tuning\recipe_sweep\d1_v8000.pkl
+[d1_v8000] trained in 95.5s, sha 8833951871fa
+    domain_1_dev: tok/char=0.28061540 tok/sent=20.603244 cold_tok/s=296077.964526 unk=0 big=1 tri=0 recon=1.00000000
+    domain_2_dev: tok/char=0.31443643 tok/sent=28.415088 cold_tok/s=326087.128237 unk=0 big=1 tri=0 recon=1.00000000
+[d1_v12000] training vocab 12000 on data/domain_1_train.txt (1280000 lines) -> tuning\recipe_sweep\d1_v12000.pkl
+[d1_v12000] trained in 103.7s, sha afe359c31609
+    domain_1_dev: tok/char=0.26627639 tok/sent=19.550450 cold_tok/s=155766.618117 unk=0 big=1 tri=0 recon=1.00000000
+    domain_2_dev: tok/char=0.29334757 tok/sent=26.509323 cold_tok/s=153239.300151 unk=0 big=1 tri=0 recon=1.00000000
+[d1_v16000] training vocab 16000 on data/domain_1_train.txt (1280000 lines) -> tuning\recipe_sweep\d1_v16000.pkl
+[d1_v16000] trained in 125.3s, sha 233e59deb007
+    domain_1_dev: tok/char=0.25758830 tok/sent=18.912556 cold_tok/s=121010.894815 unk=0 big=1 tri=0 recon=1.00000000
+    domain_2_dev: tok/char=0.27976131 tok/sent=25.281556 cold_tok/s=119596.746946 unk=0 big=1 tri=0 recon=1.00000000
+
+[mix2_v5500] reading data/mix_d1x2_d2all_seed42.txt ...
+[mix2_v5500] training vocab 5500 on data/mix_d1x2_d2all_seed42.txt (950911 lines) -> tuning\recipe_sweep\mix2_v5500.pkl
+[mix2_v5500] trained in 113.0s, sha fd0f8837e8ca
+    domain_1_dev: tok/char=0.30633916 tok/sent=22.491925 cold_tok/s=198078.237510 unk=0 big=1 tri=0 recon=1.00000000
+    domain_2_dev: tok/char=0.29950270 tok/sent=27.065552 cold_tok/s=196781.765119 unk=0 big=1 tri=0 recon=1.00000000
+[mix2_v6000] training vocab 6000 on data/mix_d1x2_d2all_seed42.txt (950911 lines) -> tuning\recipe_sweep\mix2_v6000.pkl
+[mix2_v6000] trained in 120.9s, sha 121a2b89c244
+    domain_1_dev: tok/char=0.30218082 tok/sent=22.186612 cold_tok/s=197656.589953 unk=0 big=1 tri=0 recon=1.00000000
+    domain_2_dev: tok/char=0.29311214 tok/sent=26.488048 cold_tok/s=193663.467395 unk=0 big=1 tri=0 recon=1.00000000
+[mix2_v6500] training vocab 6500 on data/mix_d1x2_d2all_seed42.txt (950911 lines) -> tuning\recipe_sweep\mix2_v6500.pkl
+[mix2_v6500] trained in 110.5s, sha 5506022662d1
+    domain_1_dev: tok/char=0.29821409 tok/sent=21.895369 cold_tok/s=194169.179774 unk=0 big=1 tri=0 recon=1.00000000
+    domain_2_dev: tok/char=0.28815215 tok/sent=26.039822 cold_tok/s=184530.658871 unk=0 big=1 tri=0 recon=1.00000000
+
+[mix3_v6000] reading data/mix_d1x3_d2all_seed42.txt ...
+[mix3_v6000] training vocab 6000 on data/mix_d1x3_d2all_seed42.txt (1266556 lines) -> tuning\recipe_sweep\mix3_v6000.pkl
+[mix3_v6000] trained in 144.2s, sha db523d1e82ad
+    domain_1_dev: tok/char=0.30000648 tok/sent=22.026969 cold_tok/s=169745.772747 unk=0 big=1 tri=0 recon=1.00000000
+    domain_2_dev: tok/char=0.29805414 tok/sent=26.934648 cold_tok/s=159166.945659 unk=0 big=1 tri=0 recon=1.00000000
+
+Wrote 14 rows to tuning\results\recipe2_cpu.csv
+Candidate pkls in tuning\recipe_sweep/ -> push these for the VM F1 sweep.

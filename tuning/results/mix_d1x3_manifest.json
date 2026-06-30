@@ -1,0 +1,16 @@
+{
+  "seed": 42,
+  "d1_ratio": 3.0,
+  "domain_1_input": "data/domain_1_train.txt",
+  "domain_2_input": "data/domain_2_train.txt",
+  "domain_1_input_sha256": "1b063716f1be700cd91e94c138db0d80dfcc64211458de43f0bca35b587035b9",
+  "domain_2_input_sha256": "0cb585e69bad4fcbad1cdd1230c539fbf227ee5870656a125f2e1b28021cfd66",
+  "domain_1_lines_total": 1280000,
+  "domain_2_lines_total": 319696,
+  "domain_1_sample_lines": 959088,
+  "pre_dedup_lines": 1278784,
+  "post_mix_lines": 1266556,
+  "post_mix_duplicate_lines_removed": 12228,
+  "output_file": "data/mix_d1x3_d2all_seed42.txt",
+  "output_sha256": "5047f1d98adffd5dca34af261bb9af85d3e375da2eb0a1c5112c4fd91c591c67"
+}
