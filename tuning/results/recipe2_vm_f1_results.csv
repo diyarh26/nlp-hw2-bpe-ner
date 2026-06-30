@@ -1,0 +1,12 @@
+variant,domain,tokenizer_path,train_file,dev_file,f1,log_path
+d1_v8000,1,tuning/recipe_sweep/d1_v8000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4352,tuning/logs/recipe2_f1/d1_v8000_domain1.log
+d1_v12000,1,tuning/recipe_sweep/d1_v12000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4113,tuning/logs/recipe2_f1/d1_v12000_domain1.log
+d1_v16000,1,tuning/recipe_sweep/d1_v16000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.3692,tuning/logs/recipe2_f1/d1_v16000_domain1.log
+mix2_v5500,1,tuning/recipe_sweep/mix2_v5500.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4817,tuning/logs/recipe2_f1/mix2_v5500_domain1.log
+mix2_v6000,1,tuning/recipe_sweep/mix2_v6000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4502,tuning/logs/recipe2_f1/mix2_v6000_domain1.log
+mix2_v6500,1,tuning/recipe_sweep/mix2_v6500.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4255,tuning/logs/recipe2_f1/mix2_v6500_domain1.log
+mix3_v6000,1,tuning/recipe_sweep/mix3_v6000.pkl,data/ner_data/train_1_binary.tagged,data/ner_data/dev_1_binary.tagged,0.4521,tuning/logs/recipe2_f1/mix3_v6000_domain1.log
+mix2_v5500,2,tuning/recipe_sweep/mix2_v5500.pkl,data/ner_data/train_2_binary.tagged,data/ner_data/dev_2_binary.tagged,0.9611,tuning/logs/recipe2_f1/mix2_v5500_domain2.log
+mix2_v6000,2,tuning/recipe_sweep/mix2_v6000.pkl,data/ner_data/train_2_binary.tagged,data/ner_data/dev_2_binary.tagged,0.9614,tuning/logs/recipe2_f1/mix2_v6000_domain2.log
+mix2_v6500,2,tuning/recipe_sweep/mix2_v6500.pkl,data/ner_data/train_2_binary.tagged,data/ner_data/dev_2_binary.tagged,0.9643,tuning/logs/recipe2_f1/mix2_v6500_domain2.log
+mix3_v6000,2,tuning/recipe_sweep/mix3_v6000.pkl,data/ner_data/train_2_binary.tagged,data/ner_data/dev_2_binary.tagged,0.9599,tuning/logs/recipe2_f1/mix3_v6000_domain2.log

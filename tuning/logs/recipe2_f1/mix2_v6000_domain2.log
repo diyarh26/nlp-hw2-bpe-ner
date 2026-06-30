@@ -1,0 +1,133 @@
+Using device: cuda
+Loading tokenizer from tuning/recipe_sweep/mix2_v6000.pkl
+Loading training data from data/ner_data/train_2_binary.tagged
+Loading dev data from data/ner_data/dev_2_binary.tagged
+Creating datasets
+Processing texts: 0it [00:00, ?it/s]Processing texts: 32it [00:00, 308.35it/s]Processing texts: 93it [00:00, 480.83it/s]Processing texts: 142it [00:00, 431.56it/s]Processing texts: 186it [00:00, 432.81it/s]Processing texts: 239it [00:00, 463.86it/s]Processing texts: 303it [00:00, 520.15it/s]Processing texts: 357it [00:00, 523.86it/s]Processing texts: 436it [00:00, 604.93it/s]Processing texts: 528it [00:00, 699.90it/s]Processing texts: 640it [00:01, 826.53it/s]Processing texts: 745it [00:01, 891.86it/s]Processing texts: 849it [00:01, 935.97it/s]Processing texts: 943it [00:01, 762.94it/s]Processing texts: 1025it [00:01, 755.51it/s]Processing texts: 1105it [00:01, 671.24it/s]Processing texts: 1176it [00:01, 549.47it/s]Processing texts: 1237it [00:02, 520.13it/s]Processing texts: 1293it [00:02, 481.55it/s]Processing texts: 1344it [00:02, 449.10it/s]Processing texts: 1391it [00:02, 362.82it/s]Processing texts: 1435it [00:02, 375.92it/s]Processing texts: 1476it [00:02, 372.18it/s]Processing texts: 1539it [00:02, 432.76it/s]Processing texts: 1585it [00:02, 408.51it/s]Processing texts: 1628it [00:03, 402.02it/s]Processing texts: 1670it [00:03, 401.96it/s]Processing texts: 1720it [00:03, 422.19it/s]Processing texts: 1777it [00:03, 462.51it/s]Processing texts: 1828it [00:03, 472.70it/s]Processing texts: 1876it [00:03, 428.49it/s]Processing texts: 1986it [00:03, 608.64it/s]Processing texts: 2050it [00:03, 573.10it/s]Processing texts: 2154it [00:03, 696.22it/s]Processing texts: 2227it [00:04, 601.81it/s]Processing texts: 2294it [00:04, 615.79it/s]Processing texts: 2361it [00:04, 629.77it/s]Processing texts: 2507it [00:04, 856.10it/s]Processing texts: 2597it [00:04, 721.51it/s]Processing texts: 2676it [00:04, 668.88it/s]Processing texts: 2748it [00:04, 567.39it/s]Processing texts: 2810it [00:05, 514.35it/s]Processing texts: 2866it [00:05, 435.75it/s]Processing texts: 2924it [00:05, 464.59it/s]Processing texts: 2975it [00:05, 445.29it/s]Processing texts: 3023it [00:05, 424.19it/s]Processing texts: 3068it [00:05, 405.72it/s]Processing texts: 3110it [00:05, 373.62it/s]Processing texts: 3156it [00:05, 392.40it/s]Processing texts: 3207it [00:06, 422.00it/s]Processing texts: 3251it [00:06, 425.91it/s]Processing texts: 3295it [00:06, 427.80it/s]Processing texts: 3348it [00:06, 456.36it/s]Processing texts: 3395it [00:06, 454.73it/s]Processing texts: 3513it [00:06, 663.55it/s]Processing texts: 3581it [00:06, 638.55it/s]Processing texts: 3711it [00:06, 825.68it/s]Processing texts: 3839it [00:06, 956.59it/s]Processing texts: 4011it [00:07, 1176.24it/s]Processing texts: 4133it [00:07, 1183.25it/s]Processing texts: 4253it [00:07, 712.13it/s] Processing texts: 4348it [00:07, 565.20it/s]Processing texts: 4425it [00:07, 479.75it/s]Processing texts: 4489it [00:08, 421.24it/s]Processing texts: 4634it [00:08, 591.77it/s]Processing texts: 4789it [00:08, 774.98it/s]Processing texts: 4903it [00:08, 844.43it/s]Processing texts: 5039it [00:08, 964.17it/s]Processing texts: 5153it [00:08, 970.36it/s]Processing texts: 5304it [00:08, 1104.17it/s]Processing texts: 5426it [00:08, 1023.78it/s]Processing texts: 5537it [00:09, 857.31it/s] Processing texts: 5659it [00:09, 939.69it/s]Processing texts: 5786it [00:09, 1015.65it/s]Processing texts: 5896it [00:09, 961.00it/s] Processing texts: 5998it [00:09, 619.31it/s]Processing texts: 6079it [00:09, 578.65it/s]Processing texts: 6150it [00:10, 529.34it/s]Processing texts: 6212it [00:10, 443.63it/s]Processing texts: 6264it [00:10, 432.65it/s]Processing texts: 6315it [00:10, 447.24it/s]Processing texts: 6399it [00:10, 533.64it/s]Processing texts: 6530it [00:10, 718.93it/s]Processing texts: 6611it [00:10, 733.65it/s]Processing texts: 6730it [00:10, 853.87it/s]Processing texts: 6861it [00:11, 977.35it/s]Processing texts: 6965it [00:11, 861.08it/s]Processing texts: 7058it [00:11, 704.93it/s]Processing texts: 7137it [00:11, 695.96it/s]Processing texts: 7213it [00:11, 691.21it/s]Processing texts: 7287it [00:11, 660.32it/s]Processing texts: 7356it [00:12, 492.61it/s]Processing texts: 7413it [00:12, 447.29it/s]Processing texts: 7463it [00:12, 448.09it/s]Processing texts: 7516it [00:12, 466.19it/s]Processing texts: 7566it [00:12, 441.23it/s]Processing texts: 7635it [00:12, 501.06it/s]Processing texts: 7688it [00:12, 462.65it/s]Processing texts: 7737it [00:12, 416.58it/s]Processing texts: 7781it [00:13, 415.71it/s]Processing texts: 7861it [00:13, 511.28it/s]Processing texts: 7915it [00:13, 450.32it/s]Processing texts: 7974it [00:13, 482.91it/s]Processing texts: 8034it [00:13, 509.10it/s]Processing texts: 8088it [00:13, 435.76it/s]Processing texts: 8135it [00:13, 443.52it/s]Processing texts: 8219it [00:13, 545.79it/s]Processing texts: 8373it [00:13, 802.88it/s]Processing texts: 8458it [00:14, 720.55it/s]Processing texts: 8574it [00:14, 823.73it/s]Processing texts: 8661it [00:14, 629.99it/s]Processing texts: 8759it [00:14, 706.52it/s]Processing texts: 8839it [00:14, 668.05it/s]Processing texts: 8913it [00:14, 578.88it/s]Processing texts: 8977it [00:15, 469.94it/s]Processing texts: 9031it [00:15, 454.02it/s]Processing texts: 9081it [00:15, 424.80it/s]Processing texts: 9127it [00:15, 399.26it/s]Processing texts: 9170it [00:15, 403.73it/s]Processing texts: 9212it [00:15, 399.81it/s]Processing texts: 9276it [00:15, 459.56it/s]Processing texts: 9339it [00:15, 502.85it/s]Processing texts: 9392it [00:16, 489.72it/s]Processing texts: 9443it [00:16, 466.19it/s]Processing texts: 9491it [00:16, 414.44it/s]Processing texts: 9560it [00:16, 483.96it/s]Processing texts: 9611it [00:16, 490.16it/s]Processing texts: 9667it [00:16, 505.91it/s]Processing texts: 9719it [00:16, 484.53it/s]Processing texts: 9773it [00:16, 499.22it/s]Processing texts: 9824it [00:16, 466.75it/s]Processing texts: 9872it [00:17, 398.97it/s]Processing texts: 9915it [00:17, 374.12it/s]Processing texts: 9954it [00:17, 374.51it/s]Processing texts: 10078it [00:17, 597.83it/s]Processing texts: 10177it [00:17, 701.81it/s]Processing texts: 10252it [00:17, 652.36it/s]Processing texts: 10321it [00:17, 538.58it/s]Processing texts: 10381it [00:17, 549.76it/s]Processing texts: 10508it [00:18, 569.59it/s]Processing texts: 10568it [00:18, 488.74it/s]Processing texts: 10623it [00:18, 500.40it/s]Processing texts: 10699it [00:18, 559.90it/s]Processing texts: 10823it [00:18, 718.90it/s]Processing texts: 10900it [00:18, 648.69it/s]Processing texts: 10970it [00:18, 563.10it/s]Processing texts: 11031it [00:19, 511.56it/s]Processing texts: 11086it [00:19, 478.75it/s]Processing texts: 11137it [00:19, 448.66it/s]Processing texts: 11184it [00:19, 396.50it/s]Processing texts: 11226it [00:19, 374.20it/s]Processing texts: 11265it [00:19, 358.11it/s]Processing texts: 11302it [00:19, 344.84it/s]Processing texts: 11352it [00:20, 379.94it/s]Processing texts: 11391it [00:20, 379.41it/s]Processing texts: 11459it [00:20, 459.12it/s]Processing texts: 11507it [00:20, 401.97it/s]Processing texts: 11560it [00:20, 428.22it/s]Processing texts: 11605it [00:20, 413.45it/s]Processing texts: 11648it [00:20, 398.77it/s]Processing texts: 11689it [00:20, 385.75it/s]Processing texts: 11729it [00:20, 381.03it/s]Processing texts: 11798it [00:21, 464.23it/s]Processing texts: 11846it [00:21, 426.00it/s]Processing texts: 11898it [00:21, 447.28it/s]Processing texts: 11949it [00:21, 463.85it/s]Processing texts: 11997it [00:21, 412.52it/s]Processing texts: 12040it [00:21, 381.60it/s]Processing texts: 12091it [00:21, 412.12it/s]Processing texts: 12144it [00:21, 436.92it/s]Processing texts: 12189it [00:22, 389.71it/s]Processing texts: 12237it [00:22, 412.54it/s]Processing texts: 12302it [00:22, 474.75it/s]Processing texts: 12387it [00:22, 575.99it/s]Processing texts: 12447it [00:22, 581.99it/s]Processing texts: 12568it [00:22, 755.22it/s]Processing texts: 12645it [00:22, 666.75it/s]Processing texts: 12715it [00:22, 616.76it/s]Processing texts: 12780it [00:23, 559.61it/s]Processing texts: 12839it [00:23, 487.21it/s]Processing texts: 12891it [00:23, 474.42it/s]Processing texts: 12941it [00:23, 434.74it/s]Processing texts: 12986it [00:23, 380.42it/s]Processing texts: 13026it [00:23, 369.92it/s]Processing texts: 13064it [00:23, 372.02it/s]Processing texts: 13102it [00:23, 350.14it/s]Processing texts: 13144it [00:24, 367.43it/s]Processing texts: 13195it [00:24, 404.91it/s]Processing texts: 13237it [00:24, 385.85it/s]Processing texts: 13284it [00:24, 405.28it/s]Processing texts: 13348it [00:24, 467.14it/s]Processing texts: 13396it [00:24, 407.34it/s]Processing texts: 13447it [00:24, 428.53it/s]Processing texts: 13492it [00:24, 426.82it/s]Processing texts: 13536it [00:24, 385.37it/s]Processing texts: 13576it [00:25, 383.20it/s]Processing texts: 13616it [00:25, 383.59it/s]Processing texts: 13656it [00:25, 376.72it/s]Processing texts: 13695it [00:25, 357.63it/s]Processing texts: 13756it [00:25, 420.84it/s]Processing texts: 13804it [00:25, 436.83it/s]Processing texts: 13891it [00:25, 555.66it/s]Processing texts: 13948it [00:25, 466.74it/s]Processing texts: 14006it [00:26, 494.30it/s]Processing texts: 14041it [00:26, 539.35it/s]
+Processing texts: 0it [00:00, ?it/s]Processing texts: 33it [00:00, 328.57it/s]Processing texts: 113it [00:00, 598.63it/s]Processing texts: 190it [00:00, 672.33it/s]Processing texts: 294it [00:00, 805.74it/s]Processing texts: 375it [00:00, 693.67it/s]Processing texts: 473it [00:00, 780.62it/s]Processing texts: 571it [00:00, 826.51it/s]Processing texts: 656it [00:00, 756.75it/s]Processing texts: 734it [00:01, 633.36it/s]Processing texts: 802it [00:01, 517.74it/s]Processing texts: 860it [00:01, 487.92it/s]Processing texts: 913it [00:01, 440.96it/s]Processing texts: 960it [00:01, 407.37it/s]Processing texts: 1003it [00:01, 385.09it/s]Processing texts: 1043it [00:01, 346.86it/s]Processing texts: 1079it [00:02, 330.74it/s]Processing texts: 1113it [00:02, 317.88it/s]Processing texts: 1145it [00:02, 314.48it/s]Processing texts: 1180it [00:02, 321.17it/s]Processing texts: 1213it [00:02, 319.09it/s]Processing texts: 1255it [00:02, 345.05it/s]Processing texts: 1321it [00:02, 430.23it/s]Processing texts: 1365it [00:02, 428.52it/s]Processing texts: 1435it [00:02, 502.27it/s]Processing texts: 1486it [00:03, 404.83it/s]Processing texts: 1530it [00:03, 368.48it/s]Processing texts: 1570it [00:03, 373.97it/s]Processing texts: 1628it [00:03, 425.61it/s]Processing texts: 1673it [00:03, 383.94it/s]Processing texts: 1732it [00:03, 435.92it/s]Processing texts: 1824it [00:03, 562.66it/s]Processing texts: 1884it [00:03, 499.17it/s]Processing texts: 1996it [00:04, 656.09it/s]Processing texts: 2159it [00:04, 914.79it/s]Processing texts: 2258it [00:04, 718.76it/s]Processing texts: 2341it [00:04, 700.39it/s]Processing texts: 2419it [00:04, 661.74it/s]Processing texts: 2514it [00:04, 723.45it/s]Processing texts: 2592it [00:04, 575.65it/s]Processing texts: 2658it [00:05, 461.82it/s]Processing texts: 2715it [00:05, 481.62it/s]Processing texts: 2770it [00:05, 461.24it/s]Processing texts: 2821it [00:05, 451.08it/s]Processing texts: 2870it [00:05, 410.27it/s]Processing texts: 2914it [00:05, 384.62it/s]Processing texts: 2954it [00:05, 379.93it/s]Processing texts: 2993it [00:06, 377.29it/s]Processing texts: 3032it [00:06, 370.58it/s]Processing texts: 3073it [00:06, 380.37it/s]Processing texts: 3112it [00:06, 370.09it/s]Processing texts: 3150it [00:06, 364.92it/s]Processing texts: 3187it [00:06, 362.95it/s]Processing texts: 3224it [00:06, 363.01it/s]Processing texts: 3250it [00:06, 478.91it/s]
+Initializing model
+Starting training for 20 epochs
+Epoch 1/20:
+  Train loss: 0.0758
+  Dev accuracy: 0.9867
+  Dev precision: 0.9612
+  Dev recall: 0.9591
+  Dev F1: 0.9601
+  Saved new best model with F1: 0.9601
+Epoch 2/20:
+  Train loss: 0.0274
+  Dev accuracy: 0.9871
+  Dev precision: 0.9652
+  Dev recall: 0.9572
+  Dev F1: 0.9612
+  Saved new best model with F1: 0.9612
+Epoch 3/20:
+  Train loss: 0.0201
+  Dev accuracy: 0.9867
+  Dev precision: 0.9733
+  Dev recall: 0.9464
+  Dev F1: 0.9597
+Epoch 4/20:
+  Train loss: 0.0206
+  Dev accuracy: 0.9871
+  Dev precision: 0.9643
+  Dev recall: 0.9585
+  Dev F1: 0.9614
+  Saved new best model with F1: 0.9614
+Epoch 5/20:
+  Train loss: 0.0213
+  Dev accuracy: 0.9854
+  Dev precision: 0.9651
+  Dev recall: 0.9470
+  Dev F1: 0.9559
+Epoch 6/20:
+  Train loss: 0.0365
+  Dev accuracy: 0.9763
+  Dev precision: 0.9196
+  Dev recall: 0.9405
+  Dev F1: 0.9299
+Epoch 7/20:
+  Train loss: 0.0937
+  Dev accuracy: 0.9580
+  Dev precision: 0.8697
+  Dev recall: 0.8812
+  Dev F1: 0.8754
+Epoch 8/20:
+  Train loss: 0.1197
+  Dev accuracy: 0.9531
+  Dev precision: 0.8721
+  Dev recall: 0.8439
+  Dev F1: 0.8578
+Epoch 9/20:
+  Train loss: 0.1242
+  Dev accuracy: 0.9525
+  Dev precision: 0.8752
+  Dev recall: 0.8358
+  Dev F1: 0.8550
+Epoch 10/20:
+  Train loss: 0.1268
+  Dev accuracy: 0.9542
+  Dev precision: 0.8715
+  Dev recall: 0.8523
+  Dev F1: 0.8618
+Epoch 11/20:
+  Train loss: 0.1276
+  Dev accuracy: 0.9521
+  Dev precision: 0.8678
+  Dev recall: 0.8421
+  Dev F1: 0.8548
+Epoch 12/20:
+  Train loss: 0.1272
+  Dev accuracy: 0.9521
+  Dev precision: 0.8684
+  Dev recall: 0.8416
+  Dev F1: 0.8548
+Epoch 13/20:
+  Train loss: 0.1296
+  Dev accuracy: 0.9485
+  Dev precision: 0.8656
+  Dev recall: 0.8198
+  Dev F1: 0.8421
+Epoch 14/20:
+  Train loss: 0.1308
+  Dev accuracy: 0.9494
+  Dev precision: 0.8627
+  Dev recall: 0.8297
+  Dev F1: 0.8459
+Epoch 15/20:
+  Train loss: 0.1331
+  Dev accuracy: 0.9501
+  Dev precision: 0.8582
+  Dev recall: 0.8412
+  Dev F1: 0.8496
+Epoch 16/20:
+  Train loss: 0.1361
+  Dev accuracy: 0.9491
+  Dev precision: 0.8496
+  Dev recall: 0.8458
+  Dev F1: 0.8477
+Epoch 17/20:
+  Train loss: 0.1388
+  Dev accuracy: 0.9488
+  Dev precision: 0.8395
+  Dev recall: 0.8588
+  Dev F1: 0.8490
+Epoch 18/20:
+  Train loss: 0.1395
+  Dev accuracy: 0.9481
+  Dev precision: 0.8457
+  Dev recall: 0.8440
+  Dev F1: 0.8448
+Epoch 19/20:
+  Train loss: 0.1404
+  Dev accuracy: 0.9476
+  Dev precision: 0.8561
+  Dev recall: 0.8261
+  Dev F1: 0.8408
+Epoch 20/20:
+  Train loss: 0.1412
+  Dev accuracy: 0.9467
+  Dev precision: 0.8376
+  Dev recall: 0.8455
+  Dev F1: 0.8416
+Training complete. Best F1: 0.9614
