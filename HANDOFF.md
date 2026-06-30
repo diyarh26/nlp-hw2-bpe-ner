@@ -16,6 +16,7 @@ From-scratch **BPE tokenizer** (`code/bpe_tokenizer.py`, `BPETokenizer(BaseToken
 
 ## Current status
 
+- **Last updated by:** Claude - 2026-06-30 (recipe-2 round on branch `recipe2-sweep`, NOT master). **tok1 promoted to the domain-1-heavy 2:1 mix @ vocab 5500 (F1 0.4817, beats the prior 0.4780 while tying efficiency + speed -> clean equal-axis win).** tok2 + tok3 UNCHANGED. New zip on the branch passes all hard gates. `master`/origin remain at `0903b82` (the prior valid submission) until the user merges. tok1 reproduces byte-identical (`fd0f8837`) via `make_mix.py --d1_ratio 2.0` + unedited `generate_tokenizers.py --vocab_size 5500 --train_files_1 mix_d1x2_d2all_seed42.txt`; `make_mix.py` is now in the zip + build_submission. VM evidence: `tuning/results/recipe2_vm_f1_results.csv`. To adopt: merge `recipe2-sweep` -> master.
 - **Last updated by:** Codex - 2026-06-29 (equal-axis recipe winners promoted; report/zip rebuilt; hard gates green).
 - **Phase:** Post-submission improvement round promoted into the final submission artifact. `HW2_214034621.zip` now contains the equal-axis winners and is the current hand-in candidate.
 - **Final tokenizers (CURRENT ZIP):** tok1 = balanced mix @ vocab 6000 (**0.4780**, `ef7db8c2382f...`), tok2 = news @ vocab 12000 (**0.9606**, `5e849d4d9c...`), tok3 = balanced dedup mix @ vocab 6000 (**0.4780/0.9621**, `ef7db8c2382f...`). tok3@6000 is byte-identical to tok1@6000 because both intentionally use the same balanced mix + vocab after the equal-axis sweep.
